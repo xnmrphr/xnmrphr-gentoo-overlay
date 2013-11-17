@@ -1,0 +1,11 @@
+diff -uNr MythTV-mythtv-347cd24.prv/mythtv/libs/libmythui/mythrender_opengl.cpp MythTV-mythtv-347cd24/mythtv/libs/libmythui/mythrender_opengl.cpp
+--- MythTV-mythtv-347cd24.prv/mythtv/libs/libmythui/mythrender_opengl.cpp	2011-05-16 15:35:54.000000000 +0200
++++ MythTV-mythtv-347cd24/mythtv/libs/libmythui/mythrender_opengl.cpp	2012-06-18 13:52:22.989802675 +0200
+@@ -1,6 +1,7 @@
+ #include "mythverbose.h"
+ #include "mythrender_opengl.h"
+ #include "mythxdisplay.h"
++#include <GL/glu.h>
+ 
+ #define LOC QString("OpenGL: ")
+ #define LOC_ERR QString("OpenGL Error: ")

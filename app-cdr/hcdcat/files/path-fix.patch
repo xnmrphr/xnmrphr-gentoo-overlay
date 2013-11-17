@@ -1,0 +1,32 @@
+diff -uNr cdcat-1.6.prv/src/cdcat_debug.pro cdcat-1.6/src/cdcat_debug.pro
+--- cdcat-1.6.prv/src/cdcat_debug.pro	2012-01-29 19:09:17.000000000 +0100
++++ cdcat-1.6/src/cdcat_debug.pro	2012-02-08 09:24:11.000000000 +0100
+@@ -147,9 +147,9 @@
+ 	
+ 	LIBS       += -lz -ltar -lbz2 -ldl
+ 	distfiles.files +=   ../README_CSV_IMPORT ../Authors ../README ../ChangeLog ../COPYING ../TRANSLATORS_README ../cdcat.png 
+-	distfiles.path =     /usr/local/share/cdcat
+-	target.path +=       /usr/local/bin
+-	translations.path += /usr/local/share/cdcat/translations
++	distfiles.path =     /usr/share/cdcat
++	target.path +=       /usr/bin
++	translations.path += /usr/share/cdcat/translations
+    # security hardening flags
+    DEFINES += _FORTIFY_SOURCE=2
+    QMAKE_CXXFLAGS += -std=c++0x -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Wformat-security -Werror=format-security 
+diff -uNr cdcat-1.6.prv/src/cdcat.pro cdcat-1.6/src/cdcat.pro
+--- cdcat-1.6.prv/src/cdcat.pro	2012-01-29 19:09:17.000000000 +0100
++++ cdcat-1.6/src/cdcat.pro	2012-02-08 09:23:56.000000000 +0100
+@@ -151,9 +151,9 @@
+ 	
+ 	LIBS       += -lz -ltar -lbz2 -ldl
+ 	distfiles.files +=   ../README_CSV_IMPORT ../Authors ../README ../ChangeLog ../COPYING ../TRANSLATORS_README ../cdcat.png 
+-	distfiles.path =     /usr/local/share/cdcat
+-	target.path +=       /usr/local/bin
+-	translations.path += /usr/local/share/cdcat/translations
++	distfiles.path =     /usr/share/cdcat
++	target.path +=       /usr/bin
++	translations.path += /usr/share/cdcat/translations
+ 
+    # security hardening flags
+    DEFINES += _FORTIFY_SOURCE=2

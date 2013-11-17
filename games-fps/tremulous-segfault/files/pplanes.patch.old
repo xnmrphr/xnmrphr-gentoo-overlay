@@ -1,0 +1,12 @@
+diff -uNr tremulous-ggp1-src.p/src/qcommon/cm_patch.h tremulous-ggp1-src/src/qcommon/cm_patch.h
+--- tremulous-ggp1-src.p/src/qcommon/cm_patch.h	2013-04-26 01:42:07.000000000 +0200
++++ tremulous-ggp1-src/src/qcommon/cm_patch.h	2013-04-26 01:42:29.801202807 +0200
+@@ -62,7 +62,7 @@
+ 
+ 
+ #define	MAX_FACETS			1024
+-#define	MAX_PATCH_PLANES	2048
++#define	MAX_PATCH_PLANES	4096
+ 
+ typedef struct {
+ 	float	plane[4];

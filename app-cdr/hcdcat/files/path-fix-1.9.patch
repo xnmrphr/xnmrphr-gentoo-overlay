@@ -1,0 +1,32 @@
+diff -uNr cdcat-1.9.prv/src/cdcat_debug.pro cdcat-1.9/src/cdcat_debug.pro
+--- cdcat-1.9.prv/src/cdcat_debug.pro	2012-05-02 18:09:56.000000000 +0200
++++ cdcat-1.9/src/cdcat_debug.pro	2012-05-02 18:11:18.790076883 +0200
+@@ -157,9 +157,9 @@
+ 	
+ 	LIBS       += -lz -ltar -lbz2 -ldl
+ 	distfiles.files +=   ../README_CSV_IMPORT ../Authors ../README ../ChangeLog ../COPYING ../TRANSLATORS_README ../cdcat.png 
+-	distfiles.path =     /usr/local/share/cdcat
+-	target.path +=       /usr/local/bin
+-	translations.path += /usr/local/share/cdcat/translations
++	distfiles.path =     /usr/share/cdcat
++	target.path +=       /usr/bin
++	translations.path += /usr/share/cdcat/translations
+ 	
+ 	# security hardening flags
+ 	DEFINES += _FORTIFY_SOURCE=2
+diff -uNr cdcat-1.9.prv/src/cdcat.pro cdcat-1.9/src/cdcat.pro
+--- cdcat-1.9.prv/src/cdcat.pro	2012-05-02 18:09:56.000000000 +0200
++++ cdcat-1.9/src/cdcat.pro	2012-05-02 18:11:01.880076832 +0200
+@@ -158,9 +158,9 @@
+ 	
+ 	LIBS       += -lz -ltar -lbz2 -ldl
+ 	distfiles.files +=   ../README_CSV_IMPORT ../Authors ../README ../ChangeLog ../COPYING ../TRANSLATORS_README ../cdcat.png 
+-	distfiles.path =     /usr/local/share/cdcat
+-	target.path +=       /usr/local/bin
+-	translations.path += /usr/local/share/cdcat/translations
++	distfiles.path =     /usr/share/cdcat
++	target.path +=       /usr/bin
++	translations.path += /usr/share/cdcat/translations
+ 	
+ 	# security hardening flags
+ 	DEFINES += _FORTIFY_SOURCE=2

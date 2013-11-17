@@ -1,0 +1,32 @@
+diff -uNr cdcat-1.6.prv/src/cdcat_debug.pro cdcat-1.6/src/cdcat_debug.pro
+--- cdcat-1.6.prv/src/cdcat_debug.pro	2012-01-29 19:09:17.000000000 +0100
++++ cdcat-1.6/src/cdcat_debug.pro	2012-02-08 09:22:00.000000000 +0100
+@@ -118,10 +118,10 @@
+ 	
+ 	########## lib7zip
+ 	# use lib7zip?
+-	DEFINES+=USE_LIB7ZIP
++	#DEFINES+=USE_LIB7ZIP
+ 
+ 	# STATIC
+-	LIBS+=/usr/local/lib/lib7zip.a
++	#LIBS+=/usr/local/lib/lib7zip.a
+ 	
+ 	# DYNAMIC
+ 	#LIBS+= -llib7zip
+diff -uNr cdcat-1.6.prv/src/cdcat.pro cdcat-1.6/src/cdcat.pro
+--- cdcat-1.6.prv/src/cdcat.pro	2012-01-29 19:09:17.000000000 +0100
++++ cdcat-1.6/src/cdcat.pro	2012-02-08 09:21:38.000000000 +0100
+@@ -112,10 +112,10 @@
+ 	
+ 	########## lib7zip
+ 	# use lib7zip?
+-	DEFINES+=USE_LIB7ZIP
++	#DEFINES+=USE_LIB7ZIP
+ 	
+ 	# STATIC
+-	LIBS+=/usr/local/lib/lib7zip.a
++	#LIBS+=/usr/local/lib/lib7zip.a
+ 	
+ 	# DYNAMIC
+ 	#LIBS+= -llib7zip

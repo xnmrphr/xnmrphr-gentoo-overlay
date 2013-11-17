@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+<herd>no-herd</herd>
+<maintainer>
+	<email>@gentoo.org</email>
+	<description>Description of the maintainership</description>
+</maintainer>
+<longdescription>Generic A/V API that relies on various multimedia players for Linux systems</longdescription>
+<use>
+	<flag name='X'>build with X11</flag>
+	<flag name='debug'>enable debug build</flag>
+	<flag name='doc'>generate extra doxygen documentation</flag>
+	<flag name='gstreamer'>build support for the gstreamer backend</flag>
+	<flag name='mplayer'>build support for the mplayer backend</flag>
+	<flag name='python'>build python bindings</flag>
+	<flag name='vlc'>build support for the vlc backend</flag>
+	<flag name='xine'>build support for the xine backend</flag>
+	<flag name='xlib-hack'>activate Xlib hack -> programs using libplayer must call XInitThreads() before any Xlib usage to avoid races</flag>
+</use>
+</pkgmetadata>

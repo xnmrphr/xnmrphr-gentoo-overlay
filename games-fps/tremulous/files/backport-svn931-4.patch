@@ -1,0 +1,942 @@
+Index: src/win32/win_wndproc.c
+===================================================================
+--- src/win32/win_wndproc.c	(revision 931)
++++ src/win32/win_wndproc.c	(working copy)
+@@ -91,7 +91,9 @@
+ 
+ 	Com_DPrintf("VID_AppActivate: %i\n", fActive );
+ 
++#ifndef DEDICATED
+ 	Key_ClearStates();	// FIXME!!!
++#endif
+ 
+ 	// we don't want to act like we're active if we're minimized
+ 	if (fActive && !g_wv.isMinimized )
+@@ -263,7 +265,11 @@
+ 		// Windows 98/Me, Windows NT 4.0 and later - uses WM_MOUSEWHEEL
+ 		// only relevant for non-DI input and when console is toggled in window mode
+ 		//   if console is toggled in window mode (KEYCATCH_CONSOLE) then mouse is released and DI doesn't see any mouse wheel
++#ifdef DEDICATED
++		if (in_mouse->integer != 1 )
++#else
+ 		if (in_mouse->integer != 1 || (!r_fullscreen->integer && (cls.keyCatchers & KEYCATCH_CONSOLE)))
++#endif
+ 		{
+ 			// 120 increments, might be 240 and multiples if wheel goes too fast
+ 			// NOTE Logitech: logitech drivers are screwed and send the message twice?
+@@ -360,7 +366,9 @@
+ 			fMinimized = (BOOL) HIWORD(wParam);
+ 
+ 			VID_AppActivate( fActive != WA_INACTIVE, fMinimized);
++#ifndef DEDICATED
+ 			SNDDMA_Activate();
++#endif
+ 		}
+ 		break;
+ 
+Index: src/win32/win_input.c
+===================================================================
+--- src/win32/win_input.c	(revision 931)
++++ src/win32/win_input.c	(working copy)
+@@ -747,6 +747,7 @@
+ 		return;
+ 	}
+ 
++#ifndef DEDICATED
+ 	if ( cls.keyCatchers & KEYCATCH_CONSOLE ) {
+ 		// temporarily deactivate if not in the game and
+ 		// running on the desktop
+@@ -757,6 +758,7 @@
+ 			return;
+ 		}
+ 	}
++#endif
+ 
+ 	if ( !in_appactive ) {
+ 		IN_DeactivateMouse ();
+Index: src/server/sv_client.c
+===================================================================
+--- src/server/sv_client.c	(revision 931)
++++ src/server/sv_client.c	(working copy)
+@@ -994,6 +994,7 @@
+ 			cl->nextSnapshotTime = -1;
+ 			cl->state = CS_ACTIVE;
+ 			SV_SendClientSnapshot( cl );
++			SV_SendServerCommand( cl, "disconnect \"%s\"", sv_pureDropMsg->string);
+ 			SV_DropClient( cl, "Unpure client detected. Invalid .PK3 files referenced!" );
+ 		}
+ 	}
+Index: src/server/server.h
+===================================================================
+--- src/server/server.h	(revision 931)
++++ src/server/server.h	(working copy)
+@@ -230,6 +230,9 @@
+ extern	cvar_t	*sv_allowDownload;
+ extern	cvar_t	*sv_maxclients;
+ 
++extern	cvar_t	*sv_wwwDownload;
++extern	cvar_t	*sv_wwwBaseURL;
++
+ extern	cvar_t	*sv_privateClients;
+ extern	cvar_t	*sv_hostname;
+ extern	cvar_t	*sv_master[MAX_MASTER_SERVERS];
+@@ -245,6 +248,7 @@
+ extern	cvar_t	*sv_minPing;
+ extern	cvar_t	*sv_maxPing;
+ extern	cvar_t	*sv_pure;
++extern  cvar_t  *sv_pureDropMsg;
+ extern	cvar_t	*sv_lanForceRate;
+ extern	cvar_t	*sv_dequeuePeriod;
+ 
+@@ -407,4 +411,3 @@
+ void SV_Netchan_Transmit( client_t *client, msg_t *msg);
+ void SV_Netchan_TransmitNextFragment( client_t *client );
+ qboolean SV_Netchan_Process( client_t *client, msg_t *msg );
+-
+Index: src/server/sv_init.c
+===================================================================
+--- src/server/sv_init.c	(revision 931)
++++ src/server/sv_init.c	(working copy)
+@@ -597,10 +597,15 @@
+ 	Cvar_Get ("sv_cheats", "1", CVAR_SYSTEMINFO | CVAR_ROM );
+ 	sv_serverid = Cvar_Get ("sv_serverid", "0", CVAR_SYSTEMINFO | CVAR_ROM );
+ 	sv_pure = Cvar_Get ("sv_pure", "1", CVAR_SYSTEMINFO );
++	sv_pureDropMsg = Cvar_Get ("sv_pureDropMsg", "This is a pure server.  Your client is missing files or corrupted.  Try turning on AutoDownload.", CVAR_SYSTEMINFO );
+ 	Cvar_Get ("sv_paks", "", CVAR_SYSTEMINFO | CVAR_ROM );
+ 	Cvar_Get ("sv_pakNames", "", CVAR_SYSTEMINFO | CVAR_ROM );
+ 	Cvar_Get ("sv_referencedPaks", "", CVAR_SYSTEMINFO | CVAR_ROM );
+ 	Cvar_Get ("sv_referencedPakNames", "", CVAR_SYSTEMINFO | CVAR_ROM );
++	sv_wwwDownload = Cvar_Get ("sv_wwwDownload", "1",
++                                   CVAR_SYSTEMINFO|CVAR_ARCHIVE);
++	sv_wwwBaseURL = Cvar_Get ("sv_wwwBaseURL", "",
++                                  CVAR_SYSTEMINFO|CVAR_ARCHIVE);
+ 
+ 	// server vars
+ 	sv_rconPassword = Cvar_Get ("rconPassword", "", CVAR_TEMP );
+@@ -609,7 +614,7 @@
+ 	sv_timeout = Cvar_Get ("sv_timeout", "200", CVAR_TEMP );
+ 	sv_zombietime = Cvar_Get ("sv_zombietime", "2", CVAR_TEMP );
+ 
+-	sv_allowDownload = Cvar_Get ("sv_allowDownload", "0", CVAR_SERVERINFO);
++	sv_allowDownload = Cvar_Get ("sv_allowDownload", "1", CVAR_SERVERINFO);
+ 	Cvar_Get ("sv_dlURL", "", CVAR_SERVERINFO | CVAR_ARCHIVE);
+ 	sv_master[0] = Cvar_Get ("sv_master1", MASTER_SERVER_NAME, 0 );
+ 	sv_master[1] = Cvar_Get ("sv_master2", "", CVAR_ARCHIVE );
+@@ -698,4 +703,3 @@
+ 	// disconnect any local clients
+ 	CL_Disconnect( qfalse );
+ }
+-
+Index: src/server/sv_main.c
+===================================================================
+--- src/server/sv_main.c	(revision 931)
++++ src/server/sv_main.c	(working copy)
+@@ -35,6 +35,9 @@
+ cvar_t	*sv_allowDownload;
+ cvar_t	*sv_maxclients;
+ 
++cvar_t	*sv_wwwDownload;
++cvar_t	*sv_wwwBaseURL;
++
+ cvar_t	*sv_privateClients;		// number of clients reserved for password
+ cvar_t	*sv_hostname;
+ cvar_t	*sv_master[MAX_MASTER_SERVERS];		// master server ip address
+@@ -50,6 +53,7 @@
+ cvar_t	*sv_minPing;
+ cvar_t	*sv_maxPing;
+ cvar_t	*sv_pure;
++cvar_t  *sv_pureDropMsg;
+ cvar_t	*sv_lanForceRate; // dedicated 1 (LAN) server forces local client rates to 99999 (bug #491)
+ cvar_t	*sv_dequeuePeriod;
+ 
+@@ -890,4 +894,3 @@
+ }
+ 
+ //============================================================================
+-
+Index: src/qcommon/q_shared.h
+===================================================================
+--- src/qcommon/q_shared.h	(revision 931)
++++ src/qcommon/q_shared.h	(working copy)
+@@ -1274,9 +1274,9 @@
+ 
+ // server browser sources
+ // TTimo: AS_MPLAYER is no longer used
+-#define AS_GLOBAL			0
++#define AS_GLOBAL			2
+ #define AS_MPLAYER		1
+-#define AS_LOCAL			2
++#define AS_LOCAL			0
+ #define AS_FAVORITES	3
+ 
+ 
+Index: src/qcommon/files.c
+===================================================================
+--- src/qcommon/files.c	(revision 931)
++++ src/qcommon/files.c	(working copy)
+@@ -2184,7 +2184,9 @@
+       continue;
+     }
+     // we drop BASEGAME "." and ".."
+-    if (Q_stricmp(name, BASEGAME) && Q_stricmpn(name, ".", 1)) {
++    //   Don't drop base or we can't return to unmodified Trem through mods menu. -- Risujin
++    //if (Q_stricmp(name, BASEGAME) && Q_stricmpn(name, ".", 1)) {
++    if (Q_stricmpn(name, ".", 1)) {
+       // now we need to find some .pk3 files to validate the mod
+       // NOTE TTimo: (actually I'm not sure why .. what if it's a mod under developement with no .pk3?)
+       // we didn't keep the information when we merged the directory names, as to what OS Path it was found under
+Index: src/qcommon/qcommon.h
+===================================================================
+--- src/qcommon/qcommon.h	(revision 931)
++++ src/qcommon/qcommon.h	(working copy)
+@@ -224,7 +224,7 @@
+ ==============================================================
+ */
+ 
+-#define	PROTOCOL_VERSION	70
++#define	PROTOCOL_VERSION	69
+ 
+ // maintain a list of compatible protocols for demo playing
+ // NOTE: that stuff only works with two digits protocols
+Index: src/qcommon/msg.c
+===================================================================
+--- src/qcommon/msg.c	(revision 931)
++++ src/qcommon/msg.c	(working copy)
+@@ -827,7 +827,7 @@
+ { NETF(modelindex), 8 },
+ { NETF(otherEntityNum2), GENTITYNUM_BITS },
+ { NETF(loopSound), 8 },
+-{ NETF(generic1), 16 },
++{ NETF(generic1), 8 },
+ { NETF(origin2[2]), 0 },
+ { NETF(origin2[0]), 0 },
+ { NETF(origin2[1]), 0 },
+@@ -1143,7 +1143,7 @@
+ { PSF(damageYaw), 8 },
+ { PSF(damagePitch), 8 },
+ { PSF(damageCount), 8 },
+-{ PSF(generic1), 16 },
++{ PSF(generic1), 8 },
+ { PSF(pm_type), 8 },					
+ { PSF(delta_angles[0]), 16 },
+ { PSF(delta_angles[2]), 16 },
+Index: src/qcommon/common.c
+===================================================================
+--- src/qcommon/common.c	(revision 931)
++++ src/qcommon/common.c	(working copy)
+@@ -33,7 +33,7 @@
+ #endif
+ 
+ int demo_protocols[] =
+-{ PROTOCOL_VERSION, 0 };
++{ 66, 67, 68, 69, 0 };
+ 
+ #define MAX_NUM_ARGVS	50
+ 
+Index: src/game/g_syscalls.asm
+===================================================================
+--- src/game/g_syscalls.asm	(revision 931)
++++ src/game/g_syscalls.asm	(working copy)
+@@ -34,24 +34,21 @@
+ equ trap_UnlinkEntity               -32
+ equ trap_EntitiesInBox              -33
+ equ trap_EntityContact              -34
+-equ trap_GetUsercmd                 -35
+-equ trap_GetEntityToken             -36
+-equ trap_FS_GetFileList             -37
+-equ trap_RealTime                   -38
+-equ trap_SnapVector                 -39
+-equ trap_TraceCapsule               -40
+-equ trap_EntityContactCapsule       -41
+-equ trap_FS_Seek                    -42
++equ trap_BotAllocateClient          -35
++equ trap_BotFreeClient              -36
++equ trap_GetUsercmd                 -37
++equ trap_GetEntityToken             -38
++equ trap_FS_GetFileList             -39
++equ trap_DebugPolygonCreate         -40
++equ trap_DebugPolygonDelete         -41
++equ trap_RealTime                   -42
++equ trap_SnapVector                 -43
++equ trap_TraceCapsule               -44
++equ trap_EntityContactCapsule       -45
++equ trap_FS_Seek                    -46
++equ trap_SendGameStat               -47
+ 
+-equ trap_Parse_AddGlobalDefine      -43
+-equ trap_Parse_LoadSource           -44
+-equ trap_Parse_FreeSource           -45
+-equ trap_Parse_ReadToken            -46
+-equ trap_Parse_SourceFileAndLine    -47
+ 
+-equ trap_SendGameStat               -48
+-
+-
+ equ memset                          -101
+ equ memcpy                          -102
+ equ strncpy                         -103
+Index: src/game/g_active.c
+===================================================================
+--- src/game/g_active.c	(revision 931)
++++ src/game/g_active.c	(working copy)
+@@ -193,8 +193,8 @@
+ 
+ static void G_ClientShove( gentity_t *ent, gentity_t *victim )
+ {
+-  vec3_t  dir, push;
+-  int entMass = 200, vicMass = 200;
++  vec3_t  dir, entMins, entMaxs, vicMins, vicMaxs, push;
++  float   entMass = 200, vicMass = 200;
+ 
+   // shoving enemies changes gameplay too much
+   if( !OnSameTeam( ent, victim ) )
+@@ -218,27 +218,35 @@
+   {
+     vicMass = BG_FindHealthForClass( victim->client->pers.classSelection );
+   }
+-  else if( BG_InventoryContainsUpgrade( UP_BATTLESUIT,
+-    victim->client->ps.stats ) )
+-  {
+-    vicMass *= 2;
+-  }
+ 
+   if( vicMass <= 0 || entMass <= 0 )
+     return;
+ 
++  // do not shove if one or the other client is completely above the other
++  if( ent->client->ps.pm_flags & PMF_CROUCH_HELD )
++    BG_FindBBoxForClass( ent->client->ps.stats[ STAT_PCLASS ],
++      entMins, NULL, entMaxs, NULL, NULL );
++  else
++    BG_FindBBoxForClass( ent->client->ps.stats[ STAT_PCLASS ],
++      entMins, entMaxs, NULL, NULL, NULL );
++  if( victim->client->ps.pm_flags & PMF_CROUCH_HELD )
++    BG_FindBBoxForClass( victim->client->ps.stats[ STAT_PCLASS ],
++      vicMins, NULL, vicMaxs, NULL, NULL );
++  else
++    BG_FindBBoxForClass( victim->client->ps.stats[ STAT_PCLASS ],
++      vicMins, vicMaxs, NULL, NULL, NULL );
++  if( ent->r.currentOrigin[ 2 ] + entMins[ 2 ] >=
++      victim->r.currentOrigin[ 2 ] + vicMaxs[ 2 ] ||
++      victim->r.currentOrigin[ 2 ] + entMins[ 2 ] >=
++      ent->r.currentOrigin[ 2 ] + vicMaxs[ 2 ] )
++    return;
++
+   VectorSubtract( victim->r.currentOrigin, ent->r.currentOrigin, dir );
+   VectorNormalizeFast( dir );
+ 
+-  // don't break the dretch elevator
+-  if( abs( dir[ 2 ] ) > abs( dir[ 0 ] ) && abs( dir[ 2 ] ) > abs( dir[ 1 ] ) )
+-    return;
+-
+-  VectorScale( dir,
+-    ( g_shove.value * ( ( float )entMass / ( float )vicMass ) ), push );
++  VectorScale( dir, entMass * g_shove.integer / vicMass, push );
+   VectorAdd( victim->client->ps.velocity, push,
+                 victim->client->ps.velocity );
+-
+ }
+ 
+ /*
+@@ -1833,5 +1841,3 @@
+ 
+   SendPendingPredictableEvents( &ent->client->ps );
+ }
+-
+-
+Index: src/game/g_public.h
+===================================================================
+--- src/game/g_public.h	(revision 931)
++++ src/game/g_public.h	(working copy)
+@@ -199,7 +199,7 @@
+   G_ENTITY_CONTACT, // ( const vec3_t mins, const vec3_t maxs, const gentity_t *ent );
+   // perform an exact check against inline brush models of non-square shape
+ 
+-  G_GET_USERCMD,  // ( int clientNum, usercmd_t *cmd )
++  G_GET_USERCMD=36,  // ( int clientNum, usercmd_t *cmd )
+ 
+   G_GET_ENTITY_TOKEN, // qboolean ( char *buffer, int bufferSize )
+   // Retrieves the next string token from the entity spawn text, returning
+@@ -207,7 +207,7 @@
+   // This should only be done at GAME_INIT time.
+ 
+   G_FS_GETFILELIST,
+-  G_REAL_TIME,
++  G_REAL_TIME=41,
+   G_SNAPVECTOR,
+ 
+   G_TRACECAPSULE, // ( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentmask );
+@@ -216,13 +216,13 @@
+   // 1.32
+   G_FS_SEEK,
+ 
++  G_SEND_GAMESTAT,
++
+   G_PARSE_ADD_GLOBAL_DEFINE,
+   G_PARSE_LOAD_SOURCE,
+   G_PARSE_FREE_SOURCE,
+   G_PARSE_READ_TOKEN,
+   G_PARSE_SOURCE_FILE_AND_LINE,
+-
+-  G_SEND_GAMESTAT
+ } gameImport_t;
+ 
+ 
+@@ -259,4 +259,3 @@
+   // The game can issue trap_argc() / trap_argv() commands to get the command
+   // and parameters.  Return qfalse if the game doesn't recognize it as a command.
+ } gameExport_t;
+-
+Index: src/game/bg_public.h
+===================================================================
+--- src/game/bg_public.h	(revision 931)
++++ src/game/bg_public.h	(working copy)
+@@ -454,13 +454,13 @@
+   BIT_NUM_TEAMS
+ } buildableTeam_t;
+ 
+-#define B_HEALTH_BITS       12
++#define B_HEALTH_BITS       5
+ #define B_HEALTH_MASK       ((1<<B_HEALTH_BITS)-1)
+ 
+-#define B_MARKED_TOGGLEBIT  0x00001000
+-#define B_SPAWNED_TOGGLEBIT 0x00002000
+-#define B_POWERED_TOGGLEBIT 0x00004000
+-#define B_DCCED_TOGGLEBIT   0x00008000
++#define B_DCCED_TOGGLEBIT    0x00000000
++#define B_SPAWNED_TOGGLEBIT  0x00000020
++#define B_POWERED_TOGGLEBIT  0x00000040
++#define B_MARKED_TOGGLEBIT   0x00000080
+ 
+ 
+ // reward sounds (stored in ps->persistant[PERS_PLAYEREVENTS])
+Index: src/game/g_cmds.c
+===================================================================
+--- src/game/g_cmds.c	(revision 931)
++++ src/game/g_cmds.c	(working copy)
+@@ -2642,7 +2642,7 @@
+       continue;
+ 
+     // can't follow another spectator
+-    if( level.clients[ clientnum ].sess.sessionTeam == TEAM_SPECTATOR )
++    if( level.clients[ clientnum ].pers.teamSelection == TEAM_SPECTATOR )
+       continue;
+ 
+     // this is good, we can use it
+@@ -3275,4 +3275,3 @@
+     ADMP( va( "%s\n", str ) );
+   }
+ }
+-
+Index: src/cgame/cg_syscalls.asm
+===================================================================
+--- src/cgame/cg_syscalls.asm	(revision 931)
++++ src/cgame/cg_syscalls.asm	(working copy)
+@@ -64,44 +64,43 @@
+ equ trap_Key_GetCatcher               -62
+ equ trap_Key_SetCatcher               -63
+ equ trap_Key_GetKey                   -64
+-equ trap_S_StopBackgroundTrack        -65
+-equ trap_RealTime                     -66
+-equ trap_SnapVector                   -67
+-equ trap_RemoveCommand                -68
+-equ trap_R_LightForPoint              -69
+-equ trap_CIN_PlayCinematic            -70
+-equ trap_CIN_StopCinematic            -71
+-equ trap_CIN_RunCinematic             -72
+-equ trap_CIN_DrawCinematic            -73
+-equ trap_CIN_SetExtents               -74
+-equ trap_R_RemapShader                -75
+-equ trap_S_AddRealLoopingSound        -76
+-equ trap_S_StopLoopingSound           -77
+-equ trap_CM_TempCapsuleModel          -78
+-equ trap_CM_CapsuleTrace              -79
+-equ trap_CM_TransformedCapsuleTrace   -80
+-equ trap_R_AddAdditiveLightToScene    -81
+-equ trap_GetEntityToken               -82
+-equ trap_R_AddPolysToScene            -83
+-equ trap_R_inPVS                      -84
+-equ trap_FS_Seek                      -85
+-equ trap_FS_GetFileList               -86
+-equ trap_LiteralArgs                  -87
+-equ trap_CM_BiSphereTrace             -88
+-equ trap_CM_TransformedBiSphereTrace  -89
+-equ trap_GetDemoState                 -90
+-equ trap_GetDemoPos                   -91
+-equ trap_GetDemoName                  -92
+-equ trap_Key_KeynumToStringBuf        -93
+-equ trap_Key_GetBindingBuf            -94
+-equ trap_Key_SetBinding               -95
++equ trap_Parse_AddGlobalDefine        -65
++equ trap_Parse_LoadSource             -66
++equ trap_Parse_FreeSource             -67
++equ trap_Parse_ReadToken              -68
++equ trap_Parse_SourceFileAndLine      -69
++equ trap_S_StopBackgroundTrack        -70
++equ trap_RealTime                     -71
++equ trap_SnapVector                   -72
++equ trap_RemoveCommand                -73
++equ trap_R_LightForPoint              -74
++equ trap_CIN_PlayCinematic            -75
++equ trap_CIN_StopCinematic            -76
++equ trap_CIN_RunCinematic             -77
++equ trap_CIN_DrawCinematic            -78
++equ trap_CIN_SetExtents               -79
++equ trap_R_RemapShader                -80
++equ trap_S_AddRealLoopingSound        -81
++equ trap_S_StopLoopingSound           -82
++equ trap_CM_TempCapsuleModel          -83
++equ trap_CM_CapsuleTrace              -84
++equ trap_CM_TransformedCapsuleTrace   -85
++equ trap_R_AddAdditiveLightToScene    -86
++equ trap_GetEntityToken               -87
++equ trap_R_AddPolysToScene            -88
++equ trap_R_inPVS                      -89
++equ trap_FS_Seek                      -90
++equ trap_FS_GetFileList               -91
++equ trap_LiteralArgs                  -92
++equ trap_CM_BiSphereTrace             -93
++equ trap_CM_TransformedBiSphereTrace  -94
++equ trap_GetDemoState                 -95
++equ trap_GetDemoPos                   -96
++equ trap_GetDemoName                  -97
++equ trap_Key_KeynumToStringBuf        -98
++equ trap_Key_GetBindingBuf            -99
++equ trap_Key_SetBinding               -100
+ 
+-equ trap_Parse_AddGlobalDefine        -96
+-equ trap_Parse_LoadSource             -97
+-equ trap_Parse_FreeSource             -98
+-equ trap_Parse_ReadToken              -99
+-equ trap_Parse_SourceFileAndLine      -100
+-
+ equ memset                            -201
+ equ memcpy                            -202
+ equ strncpy                           -203
+@@ -114,3 +113,5 @@
+ equ testPrintInt                      -210
+ equ testPrintFloat                    -211
+ 
++
++
+Index: src/cgame/cg_public.h
+===================================================================
+--- src/cgame/cg_public.h	(revision 931)
++++ src/cgame/cg_public.h	(working copy)
+@@ -138,6 +138,11 @@
+   CG_KEY_GETCATCHER,
+   CG_KEY_SETCATCHER,
+   CG_KEY_GETKEY,
++  CG_PARSE_ADD_GLOBAL_DEFINE,
++  CG_PARSE_LOAD_SOURCE,
++  CG_PARSE_FREE_SOURCE,
++  CG_PARSE_READ_TOKEN,
++  CG_PARSE_SOURCE_FILE_AND_LINE,
+   CG_S_STOPBACKGROUNDTRACK,
+   CG_REAL_TIME,
+   CG_SNAPVECTOR,
+@@ -172,12 +177,6 @@
+   CG_KEY_GETBINDINGBUF,
+   CG_KEY_SETBINDING,
+ 
+-  CG_PARSE_ADD_GLOBAL_DEFINE,
+-  CG_PARSE_LOAD_SOURCE,
+-  CG_PARSE_FREE_SOURCE,
+-  CG_PARSE_READ_TOKEN,
+-  CG_PARSE_SOURCE_FILE_AND_LINE,
+-
+   CG_MEMSET = 200,
+   CG_MEMCPY,
+   CG_STRNCPY,
+Index: src/ui/ui_public.h
+===================================================================
+--- src/ui/ui_public.h	(revision 931)
++++ src/ui/ui_public.h	(working copy)
+@@ -91,6 +91,11 @@
+   UI_MEMORY_REMAINING,
+   UI_R_REGISTERFONT,
+   UI_R_MODELBOUNDS,
++  UI_PARSE_ADD_GLOBAL_DEFINE,
++  UI_PARSE_LOAD_SOURCE,
++  UI_PARSE_FREE_SOURCE,
++  UI_PARSE_READ_TOKEN,
++  UI_PARSE_SOURCE_FILE_AND_LINE,
+   UI_S_STOPBACKGROUNDTRACK,
+   UI_S_STARTBACKGROUNDTRACK,
+   UI_REAL_TIME,
+@@ -118,12 +123,6 @@
+   UI_FS_SEEK,
+   UI_SET_PBCLSTATUS,
+ 
+-  UI_PARSE_ADD_GLOBAL_DEFINE,
+-  UI_PARSE_LOAD_SOURCE,
+-  UI_PARSE_FREE_SOURCE,
+-  UI_PARSE_READ_TOKEN,
+-  UI_PARSE_SOURCE_FILE_AND_LINE,
+-
+   UI_MEMSET = 100,
+   UI_MEMCPY,
+   UI_STRNCPY,
+@@ -148,7 +147,8 @@
+   SORT_HOST,
+   SORT_MAP,
+   SORT_CLIENTS,
+-  SORT_PING
++  SORT_PING,
++  SORT_GAME,
+ } serverSortField_t;
+ 
+ typedef enum {
+Index: src/ui/ui_main.c
+===================================================================
+--- src/ui/ui_main.c	(revision 931)
++++ src/ui/ui_main.c	(working copy)
+@@ -56,9 +56,9 @@
+ 
+ 
+ static const char *netSources[] = {
++  "LAN",
++  "Mplayer",
+   "Internet",
+-  "Mplayer",
+-  "LAN",
+   "Favorites"
+ };
+ static const int numNetSources = sizeof(netSources) / sizeof(const char*);
+@@ -5215,6 +5215,11 @@
+               return text;
+             }
+           }
++        case SORT_GAME :
++          {
++            char *type = Info_ValueForKey(info, "game");
++            return type[ 0 ] ? type : "base";
++          }
+         case SORT_MAP :
+           return Info_ValueForKey(info, "mapname");
+         case SORT_CLIENTS :
+@@ -6497,4 +6502,3 @@
+     }
+   }
+ }
+-
+Index: src/ui/ui_syscalls.asm
+===================================================================
+--- src/ui/ui_syscalls.asm	(revision 931)
++++ src/ui/ui_syscalls.asm	(working copy)
+@@ -55,37 +55,37 @@
+ equ trap_MemoryRemaining              -53
+ equ trap_R_RegisterFont               -54
+ equ trap_R_ModelBounds                -55
+-equ trap_S_StopBackgroundTrack        -56
+-equ trap_S_StartBackgroundTrack       -57
+-equ trap_RealTime                     -58
+-equ trap_LAN_GetServerCount           -59
+-equ trap_LAN_GetServerAddressString   -60
+-equ trap_LAN_GetServerInfo            -61
+-equ trap_LAN_MarkServerVisible        -62
+-equ trap_LAN_UpdateVisiblePings       -63
+-equ trap_LAN_ResetPings               -64
+-equ trap_LAN_LoadCachedServers        -65
+-equ trap_LAN_SaveCachedServers        -66
+-equ trap_LAN_AddServer                -67
+-equ trap_LAN_RemoveServer             -68
+-equ trap_CIN_PlayCinematic            -69
+-equ trap_CIN_StopCinematic            -70
+-equ trap_CIN_RunCinematic             -71
+-equ trap_CIN_DrawCinematic            -72
+-equ trap_CIN_SetExtents               -73
+-equ trap_R_RemapShader                -74
+-equ trap_LAN_ServerStatus             -75
+-equ trap_LAN_GetServerPing            -76
+-equ trap_LAN_ServerIsVisible          -77
+-equ trap_LAN_CompareServers           -78
+-equ trap_FS_Seek                      -79
+-equ trap_SetPbClStatus                -80
++equ trap_Parse_AddGlobalDefine        -56
++equ trap_Parse_LoadSource             -57
++equ trap_Parse_FreeSource             -58
++equ trap_Parse_ReadToken              -59
++equ trap_Parse_SourceFileAndLine      -60
++equ trap_S_StopBackgroundTrack        -61
++equ trap_S_StartBackgroundTrack       -62
++equ trap_RealTime                     -63
++equ trap_LAN_GetServerCount           -64
++equ trap_LAN_GetServerAddressString   -65
++equ trap_LAN_GetServerInfo            -66
++equ trap_LAN_MarkServerVisible        -67
++equ trap_LAN_UpdateVisiblePings       -68
++equ trap_LAN_ResetPings               -69
++equ trap_LAN_LoadCachedServers        -70
++equ trap_LAN_SaveCachedServers        -71
++equ trap_LAN_AddServer                -72
++equ trap_LAN_RemoveServer             -73
++equ trap_CIN_PlayCinematic            -74
++equ trap_CIN_StopCinematic            -75
++equ trap_CIN_RunCinematic             -76
++equ trap_CIN_DrawCinematic            -77
++equ trap_CIN_SetExtents               -78
++equ trap_R_RemapShader                -79
++equ trap_LAN_ServerStatus             -80
++equ trap_LAN_GetServerPing            -81
++equ trap_LAN_ServerIsVisible          -82
++equ trap_LAN_CompareServers           -83
++equ trap_FS_Seek                      -84
++equ trap_SetPbClStatus                -85
+ 
+-equ trap_Parse_AddGlobalDefine        -81
+-equ trap_Parse_LoadSource             -82
+-equ trap_Parse_FreeSource             -83
+-equ trap_Parse_ReadToken              -84
+-equ trap_Parse_SourceFileAndLine      -85
+ 
+ 
+ equ memset                            -101
+@@ -98,3 +98,5 @@
+ equ floor                             -108
+ equ ceil                              -109
+ 
++
++
+Index: src/client/cl_parse.c
+===================================================================
+--- src/client/cl_parse.c	(revision 931)
++++ src/client/cl_parse.c	(working copy)
+@@ -432,6 +432,8 @@
+ 	Q_strncpyz(clc.sv_dlURL,
+ 		Info_ValueForKey(serverInfo, "sv_dlURL"),
+ 		sizeof(clc.sv_dlURL));
++
++	Com_Printf("Serverinfo: %s\n", serverInfo);
+ }
+ 
+ /*
+@@ -718,5 +720,3 @@
+ 		}
+ 	}
+ }
+-
+-
+Index: src/client/cl_main.c
+===================================================================
+--- src/client/cl_main.c	(revision 931)
++++ src/client/cl_main.c	(working copy)
+@@ -1470,10 +1470,23 @@
+ 					clc.sv_allowDownload);
+ 			}
+ 			else if(!*clc.sv_dlURL) {
++			        char wwwBaseURL[ MAX_CVAR_VALUE_STRING ];
++
++			        Cvar_VariableStringBuffer( "sv_wwwBaseURL",
++			                                   wwwBaseURL,
++			                                   sizeof(wwwBaseURL) );
++			        if(!*wwwBaseURL)
+ 				Com_Printf("WARNING: server allows "
+-					"download redirection, but does not "
+-					"have sv_dlURL set\n");
++                                             "download redirection, but does "
++                                             "not have sv_dlURL or "
++                                             "sv_wwwBaseURL set\n");
++                                else {
++				  CL_cURL_BeginDownload(localName, va("%s/%s",
++                                                        wwwBaseURL,
++                                                        remoteName));
++				  useCURL = qtrue;
+ 			}
++			}
+ 			else if(!CL_cURL_Init()) {
+ 				Com_Printf("WARNING: could not load "
+ 					"cURL library\n");
+@@ -2562,7 +2575,11 @@
+ 
+ 	cl_showMouseRate = Cvar_Get ("cl_showmouserate", "0", 0);
+ 
+-	cl_allowDownload = Cvar_Get ("cl_allowDownload", "0", CVAR_ARCHIVE);
++	cl_allowDownload = Cvar_Get ("cl_allowDownload", "1", CVAR_ARCHIVE);
++
++	// We have to force cl_allowDownload 1 because it may have been archived 0
++	Cvar_Set("cl_allowDownload", "1");
++
+ #if USE_CURL
+ 	cl_cURLLib = Cvar_Get("cl_cURLLib", DEFAULT_CURL_LIB, CVAR_ARCHIVE);
+ #endif
+Index: src/client/cl_ui.c
+===================================================================
+--- src/client/cl_ui.c	(revision 931)
++++ src/client/cl_ui.c	(working copy)
+@@ -434,6 +434,15 @@
+ 			}
+ 			break;
+ 
++		case SORT_GAME:
++			{
++				char *game1 = server1->game,
++					*game2 = server2->game;
++				if( !game1[ 0 ] ) game1 = "base";
++				if( !game2[ 0 ] ) game2 = "base";
++				res = Q_stricmp( game1, game2 );
++			}
++			break;
+ 		case SORT_MAP:
+ 			res = Q_stricmp( server1->mapName, server2->mapName );
+ 			break;
+Index: ui/joinserver.menu
+===================================================================
+--- ui/joinserver.menu	(revision 931)
++++ ui/joinserver.menu	(working copy)
+@@ -225,7 +225,7 @@
+     {
+       name serverColumn
+       group grpColumn
+-      rect 10 130 365 232
++      rect 10 130 290 232
+       style WINDOW_STYLE_FILLED
+       border 1
+       backcolor 0 0 0 0
+@@ -237,6 +237,20 @@
+     
+     itemDef
+     {
++      name gameColumn
++      group grpColumn
++      rect 300 130 75 232
++      style WINDOW_STYLE_FILLED
++      border 1
++      backcolor 0 0 0 0
++      bordersize 1
++      bordercolor .5 .5 .5 1
++      visible 1
++      decoration
++    }
++
++    itemDef
++    {
+       name mapColumn
+       group grpColumn
+       rect 375 130 125 232
+@@ -294,11 +308,12 @@
+       backcolor     0.2 0.2 0.2 1
+       outlinecolor  0.1 0.1 0.1 0.5
+       visible 1
+-      columns 4
+-        2   40  80  ITEM_ALIGN_LEFT
++      columns 5
++        2   40  48  ITEM_ALIGN_LEFT
+         375 40  20  ITEM_ALIGN_LEFT
+         500 5   10  ITEM_ALIGN_LEFT
+         560 20  20  ITEM_ALIGN_LEFT
++        300 40  20  ITEM_ALIGN_LEFT
+ 
+       doubleClick { uiScript JoinServer }
+     }
+@@ -314,7 +329,7 @@
+       type ITEM_TYPE_BUTTON
+       textscale .33
+       style WINDOW_STYLE_EMPTY
+-      rect 10 103 365 26 
++      rect 10 103 290 26
+       textalign ITEM_ALIGN_LEFT
+       textalignx 10
+       textaligny 18
+@@ -336,6 +351,34 @@
+ 
+     itemDef
+     {
++      name game
++      group grpTabs
++      type ITEM_TYPE_BUTTON
++      text "Game"
++      textscale .33
++      style WINDOW_STYLE_EMPTY
++      rect 300 103 75 26
++      textalign ITEM_ALIGN_LEFT
++      textalignx 10
++      textaligny 18
++      border 1
++      bordercolor   0.5 0.5 0.5 1
++      forecolor     1   1   1   1
++      backcolor     0.2 0.2 0.2 1
++      outlinecolor  0.1 0.1 0.1 0.5
++      visible 1
++      action
++      {
++        play "sound/misc/menu1.wav";
++        uiScript ServerSort 4;
++
++        setitemcolor grpColumn backcolor 0 0 0 0;
++        setitemcolor gameColumn backcolor 0.3 1 1 0.5
++      }
++    }
++
++    itemDef
++    {
+       name map
+       group grpTabs
+       type ITEM_TYPE_BUTTON
+Index: Makefile
+===================================================================
+--- Makefile	(revision 931)
++++ Makefile	(working copy)
+@@ -485,7 +485,7 @@
+     LDFLAGS+=-m32
+   endif
+ 
+-  BUILD_SERVER = 0
++  #BUILD_SERVER = 0
+   BUILD_CLIENT_SMP = 0
+ 
+ else # ifeq mingw32
+@@ -1245,14 +1245,27 @@
+   $(B)/ded/vm.o \
+   $(B)/ded/vm_interpreted.o \
+   \
++  $(B)/ded/null_client.o \
++  $(B)/ded/null_snddma.o
++  
++ifeq ($(PLATFORM),mingw32)
++  Q3DOBJ += \
++    $(B)/ded/win_main.o \
++    $(B)/ded/win_net.o \
++    $(B)/ded/win_shared.o \
++    $(B)/ded/win_syscon.o \
++    $(B)/ded/win_wndproc.o \
++    $(B)/ded/win_input.o \
++    $(B)/ded/win_resource.o
++else
++  Q3DOBJ += \
++    $(B)/ded/null_input.o \
++    \
+   $(B)/ded/linux_signals.o \
+   $(B)/ded/unix_main.o \
+   $(B)/ded/unix_net.o \
+-  $(B)/ded/unix_shared.o \
+-  \
+-  $(B)/ded/null_client.o \
+-  $(B)/ded/null_input.o \
+-  $(B)/ded/null_snddma.o
++    $(B)/ded/unix_shared.o
++endif
+ 
+ ifeq ($(ARCH),x86)
+   Q3DOBJ += \
+@@ -1326,8 +1339,20 @@
+ $(B)/ded/$(VM_PPC).o : $(CMDIR)/$(VM_PPC).c; $(DO_DED_CC)
+ endif
+ 
++$(B)/ded/win_gamma.o : $(W32DIR)/win_gamma.c; $(DO_DED_CC)
++$(B)/ded/win_glimp.o : $(W32DIR)/win_glimp.c; $(DO_DED_CC)
++$(B)/ded/win_input.o : $(W32DIR)/win_input.c; $(DO_DED_CC)
++$(B)/ded/win_main.o : $(W32DIR)/win_main.c; $(DO_DED_CC)
++$(B)/ded/win_net.o : $(W32DIR)/win_net.c; $(DO_DED_CC)
++$(B)/ded/win_qgl.o : $(W32DIR)/win_qgl.c; $(DO_DED_CC)
++$(B)/ded/win_shared.o : $(W32DIR)/win_shared.c; $(DO_DED_CC)
++$(B)/ded/win_snd.o : $(W32DIR)/win_snd.c; $(DO_DED_CC)
++$(B)/ded/win_syscon.o : $(W32DIR)/win_syscon.c; $(DO_DED_CC)
++$(B)/ded/win_wndproc.o : $(W32DIR)/win_wndproc.c; $(DO_DED_CC)
++$(B)/ded/win_resource.o : $(W32DIR)/win_resource.rc; $(DO_WINDRES)
+ 
+ 
++
+ #############################################################################
+ ## TREMULOUS CGAME
+ #############################################################################

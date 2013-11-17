@@ -1,0 +1,24 @@
+diff -uNr cdcat-1.9.prv/src/dbase.cpp cdcat-1.9/src/dbase.cpp
+--- cdcat-1.9.prv/src/dbase.cpp	2012-03-29 10:34:02.000000000 +0200
++++ cdcat-1.9/src/dbase.cpp	2012-05-02 17:57:57.050073981 +0200
+@@ -574,7 +574,7 @@
+ 	}
+ #else
+ 	   if ( *DEBUG_INFO_ENABLED )
+-		std::cerr << "lib7zip library not supported" << std::end;
++		std::cerr << "lib7zip library not supported" << std::endl;
+ #endif
+ }
+ 
+diff -uNr cdcat-1.9.prv/src/selreadable.cpp cdcat-1.9/src/selreadable.cpp
+--- cdcat-1.9.prv/src/selreadable.cpp	2012-03-26 18:49:39.000000000 +0200
++++ cdcat-1.9/src/selreadable.cpp	2012-05-02 17:58:34.940074134 +0200
+@@ -358,7 +358,7 @@
+ 		}
+ #else
+ 	   if ( *DEBUG_INFO_ENABLED )
+-		std::cerr << "lib7zip library not supported" << std::end;
++		std::cerr << "lib7zip library not supported" << std::endl;
+ #endif
+ 		SupportedExtensionsList.sort();
+ 		int linelen = 0;
