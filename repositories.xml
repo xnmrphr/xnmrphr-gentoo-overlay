@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>                                                                                                     
+<repositories version="1.0">
+	<repo priority="50" quality="experimental" status="unofficial">
+		<name>xnmrphr</name>
+		<description>xnmrphr experimental overlay</description>
+		<homepage>https://code.google.com/p/xnmrphr-gentoo-overlay/</homepage>
+		<owner>
+			<email>xnmrphr@gentoo.org</email>
+		</owner>
+		<source type="git">https://code.google.com/p/xnmrphr-gentoo-overlay/</source>
+	</repo>
+</repositories>
