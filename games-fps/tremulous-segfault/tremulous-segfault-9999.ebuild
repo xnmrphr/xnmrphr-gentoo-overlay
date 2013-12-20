@@ -50,6 +50,7 @@ src_unpack() {
 	subversion_src_unpack
 	einfo CURRENT DIR: $( pwd )
 	epatch ${FILESDIR}/pplanes.patch
+	epatch ${FILESDIR}/zonemegs.patch
 }
 
 src_compile() {

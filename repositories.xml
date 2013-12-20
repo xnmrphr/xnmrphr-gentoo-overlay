@@ -5,7 +5,7 @@
 		<description>xnmrphr experimental overlay</description>
 		<homepage>https://code.google.com/p/xnmrphr-gentoo-overlay/</homepage>
 		<owner>
-			<email>xnmrphr@gentoo.org</email>
+			<email>xnmrphr@gmail.com</email>
 		</owner>
 		<source type="git">https://code.google.com/p/xnmrphr-gentoo-overlay/</source>
 	</repo>

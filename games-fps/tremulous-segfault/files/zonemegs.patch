@@ -1,0 +1,12 @@
+diff -uNr tremulous.p/tremulous-ggp1-src/src/qcommon/common.c tremulous/tremulous-ggp1-src/src/qcommon/common.c
+--- tremulous.p/tremulous-ggp1-src/src/qcommon/common.c	2013-12-20 02:11:28.000000000 +0100
++++ tremulous/tremulous-ggp1-src/src/qcommon/common.c	2013-12-20 02:12:02.619990970 +0100
+@@ -40,7 +40,7 @@
+ #define MIN_DEDICATED_COMHUNKMEGS 1
+ #define MIN_COMHUNKMEGS		128
+ #define DEF_COMHUNKMEGS		128
+-#define DEF_COMZONEMEGS		24
++#define DEF_COMZONEMEGS		64
+ #define DEF_COMHUNKMEGS_S	XSTRING(DEF_COMHUNKMEGS)
+ #define DEF_COMZONEMEGS_S	XSTRING(DEF_COMZONEMEGS)
+ 
