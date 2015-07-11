@@ -1,0 +1,45 @@
+diff -uNr tremulous-ggp1-src.p/Makefile tremulous-ggp1-src/Makefile
+--- tremulous-ggp1-src.p/Makefile	2015-07-30 05:30:24.000000000 +0200
++++ tremulous-ggp1-src/Makefile	2015-07-30 05:34:48.001830420 +0200
+@@ -926,14 +926,14 @@
+ 
+ ifneq ($(BUILD_CLIENT),0)
+   ifneq ($(USE_RENDERER_DLOPEN),0)
+-    TARGETS += $(B)/$(CLIENTBIN)$(FULLBINEXT) $(B)/renderer_opengl1_$(SHLIBNAME)
++    TARGETS += $(B)/$(CLIENTBIN)$(FULLBINEXT) $(B)/renderer_gpp_opengl1_$(SHLIBNAME)
+     ifneq ($(BUILD_RENDERER_OPENGL2),0)
+-      TARGETS += $(B)/renderer_opengl2_$(SHLIBNAME)
++      TARGETS += $(B)/renderer_gpp_opengl2_$(SHLIBNAME)
+     endif
+   else
+     TARGETS += $(B)/$(CLIENTBIN)$(FULLBINEXT)
+     ifneq ($(BUILD_RENDERER_OPENGL2),0)
+-      TARGETS += $(B)/$(CLIENTBIN)_opengl2$(FULLBINEXT)
++      TARGETS += $(B)/$(CLIENTBIN)_gpp_opengl2$(FULLBINEXT)
+     endif
+   endif
+ endif
+@@ -2006,12 +2006,12 @@
+ 		-o $@ $(Q3OBJ) \
+ 		$(LIBSDLMAIN) $(CLIENT_LIBS) $(LIBS)
+ 
+-$(B)/renderer_opengl1_$(SHLIBNAME): $(Q3ROBJ) $(JPGOBJ)
++$(B)/renderer_gpp_opengl1_$(SHLIBNAME): $(Q3ROBJ) $(JPGOBJ)
+ 	$(echo_cmd) "LD $@"
+ 	$(Q)$(CC) $(CFLAGS) $(SHLIBLDFLAGS) -o $@ $(Q3ROBJ) $(JPGOBJ) \
+ 		$(THREAD_LIBS) $(LIBSDLMAIN) $(RENDERER_LIBS) $(LIBS)
+ 
+-$(B)/renderer_opengl2_$(SHLIBNAME): $(Q3R2OBJ) $(Q3R2STRINGOBJ) $(JPGOBJ)
++$(B)/renderer_gpp_opengl2_$(SHLIBNAME): $(Q3R2OBJ) $(Q3R2STRINGOBJ) $(JPGOBJ)
+ 	$(echo_cmd) "LD $@"
+ 	$(Q)$(CC) $(CFLAGS) $(SHLIBLDFLAGS) -o $@ $(Q3R2OBJ) $(Q3R2STRINGOBJ) $(JPGOBJ) \
+ 		$(THREAD_LIBS) $(LIBSDLMAIN) $(RENDERER_LIBS) $(LIBS)
+@@ -2022,7 +2022,7 @@
+ 		-o $@ $(Q3OBJ) $(Q3ROBJ) $(JPGOBJ) \
+ 		$(LIBSDLMAIN) $(CLIENT_LIBS) $(RENDERER_LIBS) $(LIBS)
+ 
+-$(B)/$(CLIENTBIN)_opengl2$(FULLBINEXT): $(Q3OBJ) $(Q3R2OBJ) $(Q3R2STRINGOBJ) $(JPGOBJ) $(LIBSDLMAIN)
++$(B)/$(CLIENTBIN)_gpp_opengl2$(FULLBINEXT): $(Q3OBJ) $(Q3R2OBJ) $(Q3R2STRINGOBJ) $(JPGOBJ) $(LIBSDLMAIN)
+ 	$(echo_cmd) "LD $@"
+ 	$(Q)$(CC) $(CLIENT_CFLAGS) $(CFLAGS) $(CLIENT_LDFLAGS) $(LDFLAGS) \
+ 		-o $@ $(Q3OBJ) $(Q3R2OBJ) $(Q3R2STRINGOBJ) $(JPGOBJ) \

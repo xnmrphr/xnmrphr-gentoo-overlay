@@ -15,10 +15,10 @@ SRC_URI="mirror://sourceforge/tremulous/${MY_P}.zip"
 LICENSE="GPL-2 CCPL-Attribution-ShareAlike-2.5"
 SLOT="0"
 KEYWORDS="~amd64 ~ppc ~x86"
-IUSE="dedicated openal +opengl +vorbis"
+IUSE="dedicated openal +opengl +vorbis -qvm"
 
 UIDEPEND="
-	media-libs/jpeg:0
+	virtual/jpeg
 	media-libs/libsdl[opengl?]
 	vorbis? ( media-libs/libogg media-libs/libvorbis )
 	openal? ( media-libs/openal )
@@ -30,12 +30,21 @@ RDEPEND="opengl? ( ${UIDEPEND} )
 DEPEND="${RDEPEND}
 	app-arch/unzip"
 
-# there is a typo in dirname
 S=${WORKDIR}/tremulous/tremulous-ggp1-src
+
+pkg_setup() {
+    if use qvm; then
+        ewarn "======================================================"
+        ewarn "BIG FAT WARNING!!!"
+        ewarn " Try to do not use qvm flag"
+        ewarn "in most systems building deprecated QVMs may fail"
+        ewarn "======================================================"
+        sleep 2
+    fi
+}
 
 src_unpack() {
 	unpack ${A}
-
 	cd tremulous
 	unpack ./${MY_P}-src.tar.gz
 }
@@ -52,13 +61,21 @@ src_compile() {
 		fi
 	fi
 
+	if use qvm; then
+		einfo "Building source based QVMS"
+		qvm=1
+	else
+		einfo "Using distributed QVMS"
+		qvm=0
+	fi
+
 	emake \
 		$(use amd64 && echo ARCH=x86_64) \
 		BUILD_CLIENT=${client} \
 		BUILD_CLIENT_SMP=${client} \
 		BUILD_SERVER=$(buildit dedicated) \
 		BUILD_GAME_SO=0 \
-		BUILD_GAME_QVM=0 \
+		BUILD_GAME_QVM=${qvm} \
 		CC="$(tc-getCC)" \
 		DEFAULT_BASEDIR="${GAMES_DATADIR}/tremulous" \
 		USE_CODEC_VORBIS=$(buildit vorbis) \
@@ -70,12 +87,20 @@ src_compile() {
 
 src_install() {
 	insinto "${GAMES_DATADIR}"/tremulous
+	if use qvm; then
+		rm	-f ../gpp/vms-gpp1.pk3 || die "rm old vms"
+		einfo "Zipping VMS pack"
+		cd	build/release-linux-*/base/
+		zip -r ../../../../gpp/vms-gpp1.pk3 vm/ || die "vmsX.pk3"
+	fi
+	
+	cd ${S}
 	doins -r ../gpp || die "doins -r failed"
 	dodoc ChangeLog
 	if use opengl || ! use dedicated ; then
 		newgamesbin build/release-linux-*/tremulous-smp.* ${PN} \
 			|| die "newgamesbin ${PN}"
-		#newicon "${WORKDIR}"/tyrant.xpm ${PN}.xpm
+		newicon "${S}"/misc/tremulous.xpm ${PN}.xpm
 		make_desktop_entry ${PN} Tremulous-GPP
 	fi
 	if use dedicated ; then

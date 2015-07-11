@@ -1,0 +1,12 @@
+diff -uNr src.p/qcommon/common.c src/qcommon/common.c
+--- src.p/qcommon/common.c	2015-07-15 04:14:57.000000000 +0200
++++ src/qcommon/common.c	2015-07-15 04:22:46.254816614 +0200
+@@ -40,7 +40,7 @@
+ #define MIN_DEDICATED_COMHUNKMEGS 1
+ #define MIN_COMHUNKMEGS		256
+ #define DEF_COMHUNKMEGS		256
+-#define DEF_COMZONEMEGS		24
++#define DEF_COMZONEMEGS		32
+ #define DEF_COMHUNKMEGS_S	XSTRING(DEF_COMHUNKMEGS)
+ #define DEF_COMZONEMEGS_S	XSTRING(DEF_COMZONEMEGS)
+ 

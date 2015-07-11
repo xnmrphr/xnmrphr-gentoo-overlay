@@ -4,11 +4,9 @@
 
 EAPI=4
 
-LANGS="en cz de el es fr hu id it pl pt sk sr"
-#LANGSLONG="en_US pl_PL"
+LANGS="en cz de el es fr hu id it pl pt sk sr ru"
 
 inherit eutils qt4-r2
-
 
 MY_PN=${PN/h/}
 
@@ -24,7 +22,7 @@ SLOT="0"
 
 KEYWORDS="~x86 ~amd64"
 
-IUSE="debug" #Mostly for qt4-r2 build-in availbility.
+IUSE="debug"
 
 DEPEND="sys-libs/zlib
 >=dev-qt/qtgui-4.8.4-r1
@@ -39,11 +37,6 @@ RDEPEND="${DEPEND}"
 #DOCSDIR="${S}/docs/"
 DOCS="Authors ChangeLog README"
 
-#S="${WORKDIR}/${P}"
-
-
-#LINGUAS="en_US"
-
 #PATCHES=(
 #"${FILESDIR}/unlib7zip.patch"
 #)
@@ -56,8 +49,7 @@ S="${WORKDIR}/${MY_PN}-${PV}"
 
 
 src_unpack () {
-unpack ${A}
-#epatch ${FILESDIR}/unlib7zip.diff
+    unpack ${A}
 }
 
 src_configure() {
@@ -66,14 +58,16 @@ src_configure() {
     sed -i -e 's/DEFINES+=USE_LIB7ZIP/#DEFINES+=USE_LIB7ZIP/' ${S}/src/cdcat_debug.pro || die "Problem with edit project file."
     sed -i -e 's/LIBS+=\ -l7zip/#LIBS+=\ -l7zip/' ${S}/src/cdcat_debug.pro || die "Problem with edit project file."
 
+    sed -i -e 's/\/usr\/local/\/usr/' ${S}/src/cdcat.pro || die "Problem with edit project file."
+    sed -i -e 's/\/usr\/local/\/usr/' ${S}/src/cdcat_debug.pro || die "Problem with edit project file."
+
     lrelease "${S}/src/cdcat.pro"
     eqmake4 "${S}/src/cdcat.pro"
 }
 
 src_install() {
     qt4-r2_src_install
-
-#    insinto /usr/share/${MY_PN}/translations
+    mv "${D}/usr/bin/${MY_PN}" "${D}/usr/bin/${PN}" || die rename failed
 
     for l in ${LANGS}; do
 	if ! use linguas_${l} && [ "${l}" != "en" ]; then
@@ -81,8 +75,6 @@ src_install() {
 	fi
     done
 
-    #rm ${D}/usr/share/cdcat/cdcat.png
-
-#newicon cdcat.png ${MY_PN}.png
-make_desktop_entry ${MY_PN} "Hyper's CD Catalog" /usr/share/${MY_PN}/${MY_PN}.png "AudioVideo;DiscBurning"
+    #newicon cdcat.png ${MY_PN}.png
+    make_desktop_entry ${PN} "Hyper's CD Catalog" /usr/share/${MY_PN}/${MY_PN}.png "AudioVideo;DiscBurning"
 }

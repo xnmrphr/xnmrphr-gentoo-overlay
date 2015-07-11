@@ -1,0 +1,183 @@
+diff -Naru common/lib/modules/fglrx/build_mod/dkms.conf common-r1/lib/modules/fglrx/build_mod/dkms.conf
+--- common/lib/modules/fglrx/build_mod/dkms.conf	1969-12-31 19:00:00.000000000 -0500
++++ common-r1/lib/modules/fglrx/build_mod/dkms.conf	2015-04-27 13:21:06.000000000 -0400
+@@ -0,0 +1,9 @@
++PACKAGE_NAME="fglrx-core"
++PACKAGE_VERSION="15.200"
++#Prevent builds with kernels newer than the ones we ship
++CLEAN="rm -f *.*o"
++BUILT_MODULE_NAME[0]="fglrx"
++DEST_MODULE_NAME[0]="fglrx"
++MAKE[0]="cd ${dkms_tree}/fglrx/15.200/build; sh make.sh --nohints --uname_r=$kernelver --norootcheck"
++DEST_MODULE_LOCATION[0]="/kernel/drivers/char/drm"
++AUTOINSTALL="yes"
+diff -Naru common/lib/modules/fglrx/build_mod/firegl_public.c common-r1/lib/modules/fglrx/build_mod/firegl_public.c
+--- common/lib/modules/fglrx/build_mod/firegl_public.c	2015-03-06 11:44:48.000000000 -0500
++++ common-r1/lib/modules/fglrx/build_mod/firegl_public.c	2015-04-27 13:21:06.000000000 -0400
+@@ -93,7 +93,7 @@
+    and they use different config options. These options can only be enabled
+    on x86_64 with newer 2.6 kernels (2.6.23 for intel, 2.6.26 for amd). 
+ */
+-#if defined(CONFIG_AMD_IOMMU) || defined(CONFIG_DMAR)
++#if defined(CONFIG_AMD_IOMMU) || defined(CONFIG_INTEL_IOMMU) || defined(CONFIG_DMAR)
+     #define FIREGL_DMA_REMAPPING
+ #endif
+ 
+@@ -269,8 +269,12 @@
+ #endif
+ 
+ #ifdef MODULE_LICENSE
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0)
++MODULE_LICENSE("GPL\0Proprietary. (C) 2002 - ATI Technologies, Starnberg, GERMANY");
++#else
+ MODULE_LICENSE("Proprietary. (C) 2002 - ATI Technologies, Starnberg, GERMANY");
+ #endif
++#endif
+ #ifdef MODULE_DEVICE_TABLE
+ MODULE_DEVICE_TABLE(pci, fglrx_pci_table);
+ #endif
+@@ -3496,7 +3500,12 @@
+ #else
+         //when MSI enabled. keep irq disabled when calling the action handler,
+         //exclude this IRQ from irq balancing (only on one CPU) 
+-        ((useMSI) ? (IRQF_DISABLED | IRQF_NOBALANCING) : (IRQF_SHARED)),    
++
++#if LINUX_VERSION_CODE < KERNEL_VERSION(4,1,0)
++        ((useMSI) ? (IRQF_DISABLED | IRQF_NOBALANCING) : (IRQF_SHARED)),
++#else
++        ((useMSI) ? (IRQF_NOBALANCING) : (IRQF_SHARED)),
++#endif
+ #endif
+         dev_name,
+         context);
+@@ -4496,8 +4505,13 @@
+ 
+     if (cpu_has_pge)
+     {
+-        cr4 = read_cr4();
+-        write_cr4(cr4 & ~X86_CR4_PGE);
++#if LINUX_VERSION_CODE < KERNEL_VERSION(4,0,0)
++	cr4 = read_cr4();
++	write_cr4(cr4 & ~X86_CR4_PGE);
++#else
++	cr4 = __read_cr4();
++	__write_cr4(cr4 & ~X86_CR4_PGE);
++#endif
+     }
+      __flush_tlb();
+ 
+@@ -4510,7 +4524,11 @@
+     write_cr0(cr0 & 0xbfffffff);
+     if (cpu_has_pge)
+     {
+-        write_cr4(cr4);
++#if LINUX_VERSION_CODE < KERNEL_VERSION(4,0,0)
++	write_cr4(cr4);
++#else
++	__write_cr4(cr4);
++#endif
+     }
+     local_irq_restore(flags);
+ 
+@@ -4537,8 +4555,13 @@
+ 
+     if (cpu_has_pge)
+     {
+-        cr4 = read_cr4();
+-        write_cr4(cr4 & ~X86_CR4_PGE);
++#if LINUX_VERSION_CODE < KERNEL_VERSION(4,0,0)
++	cr4 = read_cr4();
++	write_cr4(cr4 & ~X86_CR4_PGE);
++#else
++	cr4 = __read_cr4();
++	__write_cr4(cr4 & ~X86_CR4_PGE);
++#endif
+     }
+      __flush_tlb();
+   
+@@ -4550,7 +4573,11 @@
+     write_cr0(cr0 & 0xbfffffff);
+     if (cpu_has_pge)
+     {
+-        write_cr4(cr4);
++#if LINUX_VERSION_CODE < KERNEL_VERSION(4,0,0)
++	write_cr4(cr4);
++#else
++	__write_cr4(cr4);
++#endif
+     }
+     local_irq_restore(flags);
+ 
+@@ -6420,7 +6447,7 @@
+     generate_random_uuid((char *)buf);
+ }
+ 
+-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0)
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0) && LINUX_VERSION_CODE < KERNEL_VERSION(4,0,0)
+ static int KCL_fpu_save_init(struct task_struct *tsk)
+ {
+    struct fpu *fpu = &tsk->thread.fpu;
+diff -Naru common/lib/modules/fglrx/build_mod/kcl_acpi.c common-r1/lib/modules/fglrx/build_mod/kcl_acpi.c
+--- common/lib/modules/fglrx/build_mod/kcl_acpi.c	2015-03-06 11:44:48.000000000 -0500
++++ common-r1/lib/modules/fglrx/build_mod/kcl_acpi.c	2015-04-27 13:21:06.000000000 -0400
+@@ -829,6 +829,7 @@
+     return retHandle;
+ }
+ 
++#if LINUX_VERSION_CODE < KERNEL_VERSION(4,0,0)
+ static acpi_status KCL_ACPI_Slot_No_Hotplug(KCL_ACPI_DevHandle handle, u32 lvl, void *data, void **rv)
+ {
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,7) && LINUX_VERSION_CODE < KERNEL_VERSION(3,17,0)
+@@ -848,6 +849,7 @@
+ #endif
+    return 0;
+ }
++#endif
+ 
+ void ATI_API_CALL KCL_ACPI_No_Hotplug(void* dev)
+ {
+diff -Naru common/lib/modules/fglrx/build_mod/kcl_str.c common-r1/lib/modules/fglrx/build_mod/kcl_str.c
+--- common/lib/modules/fglrx/build_mod/kcl_str.c	2015-03-06 11:44:48.000000000 -0500
++++ common-r1/lib/modules/fglrx/build_mod/kcl_str.c	2015-04-27 13:21:06.000000000 -0400
+@@ -169,7 +169,11 @@
+                                   const char* s2,
+                                   KCL_TYPE_SizeSigned count)
+ {
++#if LINUX_VERSION_CODE < KERNEL_VERSION(4,0,0)
+     return strnicmp(s1, s2, count);
++#else
++    return strncasecmp(s1, s2, count);
++#endif
+ }
+ 
+ /** \brief Locate character in string
+diff -Naru common/lib/modules/fglrx/build_mod/README.md common-r1/lib/modules/fglrx/build_mod/README.md
+--- common/lib/modules/fglrx/build_mod/README.md	1969-12-31 19:00:00.000000000 -0500
++++ common-r1/lib/modules/fglrx/build_mod/README.md	2015-04-27 13:21:06.000000000 -0400
+@@ -0,0 +1,26 @@
++fglrx-core-15.200 ( deb for Ubuntu 15.04 vivid - fglrx-core-15.200 )
++=================
++
++17-03-2015
++
++fglrx-core-15.200 ubuntu vivid deb:
++
++[i386]
++
++http://packages.ubuntu.com/vivid/i386/fglrx-amdcccle/download
++
++http://packages.ubuntu.com/vivid/i386/fglrx-core/download
++
++http://packages.ubuntu.com/vivid/i386/fglrx-dev/download
++
++http://packages.ubuntu.com/vivid/i386/fglrx/download
++
++[amd64]
++
++http://packages.ubuntu.com/vivid/amd64/fglrx-amdcccle/download
++
++http://packages.ubuntu.com/vivid/amd64/fglrx-core/download
++
++http://packages.ubuntu.com/vivid/amd64/fglrx-dev/download
++
++http://packages.ubuntu.com/vivid/amd64/fglrx/download

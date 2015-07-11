@@ -1,9 +1,0 @@
-diff -uNr freevo-1.9.2b2.p/src/revision.py freevo-1.9.2b2/src/revision.py
---- freevo-1.9.2b2.p/src/revision.py	2012-05-14 18:04:05.000000000 +0200
-+++ freevo-1.9.2b2/src/revision.py	2012-05-14 18:06:33.070470825 +0200
-@@ -2,4 +2,4 @@
- Freevo revision number
- """
- 
--__revision__ = 
-+__revision__ = ""

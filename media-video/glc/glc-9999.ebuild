@@ -12,7 +12,7 @@ GLC_SUPPORT_REPO_URI="git://github.com/nullkey/glc-support.git"
 
 LICENSE="ZLIB"
 SLOT="0"
-KEYWORDS="~x86 ~amd64"
+KEYWORDS=""
 IUSE="example-scripts"
 
 DEPEND=">=dev-libs/packetstream-0.1.3
@@ -29,21 +29,22 @@ RESTRICT="nomirror"
 EMULTILIB_PKG="true"
 
 src_unpack() {
-	local REAL_S
-
-	EGIT_REPO_URI="${GLC_REPO_URI}" \
-	EGIT_PROJECT="${PN}-git" \
-		git_src_unpack
+#	local REAL_S
+	EGIT_SOURCEDIR="${S}"
+	EGIT_REPO_URI="${GLC_REPO_URI}"
+	EGIT_PROJECT="${PN}-git"
+		git-2_src_unpack
 
 	# temporarily route ${S} to ${S}/support
-	REAL_S="${S}"
-	S="${S}/support"
+#	REAL_S="${S}"
 
-	EGIT_REPO_URI="${GLC_SUPPORT_REPO_URI}" \
-	EGIT_PROJECT="${PN}-support-git" \
-		git_src_unpack
+#	S="${S}/support"
+	EGIT_SOURCEDIR="${S}/support"
+	EGIT_REPO_URI="${GLC_SUPPORT_REPO_URI}"
+	EGIT_PROJECT="${PN}-support-git"
+		git-2_src_unpack
 
-	S="${REAL_S}"
+#	S="${REAL_S}"
 }
 
 src_compile_abi() {

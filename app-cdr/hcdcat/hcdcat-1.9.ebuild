@@ -26,7 +26,7 @@ KEYWORDS="~x86 ~amd64"
 IUSE="debug" #Mostly for qt4-r2 build-in availbility.
 
 DEPEND="sys-libs/zlib
-x11-libs/qt-gui:4
+>=dev-qt/qtgui-4.8.4-r1
 >=media-libs/libmediainfo-0.7.52
 >=dev-libs/libtar-1.2.11-r4
 >=app-arch/p7zip-9.20.1-r1"
@@ -37,27 +37,18 @@ RDEPEND="${DEPEND}"
 #DOCSDIR="${S}/docs/"
 DOCS="Authors ChangeLog README"
 
-#S="${WORKDIR}/${P}"
-
-
-#LINGUAS="en_US"
-
 PATCHES=(
 "${FILESDIR}/unlib7zip.patch"
 "${FILESDIR}/endl.patch"
 "${FILESDIR}/path-fix-1.9.patch"
 )
-#"${FILESDIR}/path-fix.patch"
 
 S="${WORKDIR}/${MY_PN}-${PV}"
 
 
 src_unpack () {
-unpack ${A}
-#epatch ${FILESDIR}/unlib7zip.diff
+    unpack ${A}
 }
-
-
 
 src_configure() {
     lrelease "${S}/src/cdcat.pro"
@@ -66,8 +57,7 @@ src_configure() {
 
 src_install() {
     qt4-r2_src_install
-
-#    insinto /usr/share/${MY_PN}/translations
+    mv "${D}/usr/bin/${MY_PN}" "${D}/usr/bin/${PN}" || die rename failed
 
     for l in ${LANGS}; do
 	if ! use linguas_${l} && [ "${l}" != "en" ]; then
@@ -75,8 +65,6 @@ src_install() {
 	fi
     done
 
-    #rm ${D}/usr/share/cdcat/cdcat.png
-
-#newicon cdcat.png ${MY_PN}.png
-make_desktop_entry ${MY_PN} "Hyper's CD Catalog" /usr/share/${MY_PN}/${MY_PN}.png "AudioVideo;DiscBurning"
+    #newicon cdcat.png ${MY_PN}.png
+    make_desktop_entry ${PN} "Hyper's CD Catalog" /usr/share/${MY_PN}/${MY_PN}.png "AudioVideo;DiscBurning"
 }

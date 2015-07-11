@@ -11,7 +11,7 @@ SRC_URI="x86? ( http://savage2.s2games.com/downloads/Savage2-$PV-linux-installer
 
 LICENSE="as-is"
 SLOT="0"
-KEYWORDS="~x86 ~amd64"
+KEYWORDS="-*"
 IUSE=""
 RESTRICT="mirror strip"
 

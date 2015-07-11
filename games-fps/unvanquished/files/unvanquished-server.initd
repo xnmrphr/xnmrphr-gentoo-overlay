@@ -4,8 +4,8 @@
 # $Header: $
 
 PIDFILE="/var/run/$NAME.pid"
-DAEMON="@GAMES_BINDIR@/unvanquished-server"
-HOMEDIR="@GAMES_STATEDIR@/unvanquished-server"
+DAEMON="/usr/bin/unvanquished-server"
+HOMEDIR="/var/lib/unvanquished-server"
 
 description="Unvanquished dedicated server"
 
@@ -15,7 +15,7 @@ depend() {
 
 start() {
 	if [ "$START_DAEMON" != 1 ]; then
-		eerror "(not starting - disabled in /etc/conf.d/unvanquished-server)"
+		eerror "(not starting - disabled in /etc/default/unvanquished-server)"
 		return 1
 	fi
 
@@ -29,7 +29,7 @@ start() {
 		--background \
 		--user unvanquished-server \
 		--env HOME="${HOMEDIR}" \
-		--group games \
+		--group unvanquished-server \
 		--name unvanquished-server \
 		--exec /usr/bin/screen -- -D -m -S unvanquished-server $DAEMON $DAEMON_OPTS
 

@@ -6,7 +6,7 @@ EAPI=2
 
 MY_P=$"${PN}1"
 
-inherit eutils toolchain-funcs games subversion 
+inherit eutils toolchain-funcs games subversion git-r3
 
 DESCRIPTION="Team-based aliens vs humans FPS with buildable structures"
 HOMEPAGE="http://tremulous.net/"
@@ -15,13 +15,16 @@ HOMEPAGE="http://tremulous.net/"
 RESTRICT="mirror" #Mirror restriction, because we won't try to download that release from official mirrors - @rocket
 SRC_URI="mirror://sourceforge/tremulous/${MY_P}.zip"
 
-ESVN_REPO_URI="svn://svn.icculus.org/tremulous/branches/gpp"
+#ESVN_REPO_URI="svn://svn.icculus.org/tremulous/branches/gpp"
 #ESVN_PROJECT="tremulous-gpp"
+
+EGIT_REPO_URI="https://github.com/darklegion/tremulous.git"
+EGIT_BRANCH="gpp"
 
 LICENSE="GPL-2 CCPL-Attribution-ShareAlike-2.5"
 SLOT="0"
 KEYWORDS=""
-IUSE="dedicated openal +opengl +vorbis +qvm"
+IUSE="dedicated openal +opengl +opengl2 +vorbis +qvm"
 
 UIDEPEND="
 	virtual/jpeg
@@ -39,15 +42,20 @@ DEPEND="${RDEPEND}
 	app-arch/unzip
 	app-arch/zip"
 
-# there is a typo in dirname
 S=${WORKDIR}/tremulous/tremulous-ggp1-src
+EGIT_CHECKOUT_DIR=${S}
 
 src_unpack() {
 	unpack ${A}
-#	cd tremulous
-#	unpack ./${MY_P}-src.tar.gz
-	subversion_src_unpack
+	#subversion_src_unpack
+#	git-2_src_unpack
+	git-r3_src_unpack
 }
+
+src_prepare() {
+	epatch ${FILESDIR}/gpp-renderer.patch
+}
+
 
 src_compile() {
 	buildit() { use $1 && echo 1 || echo 0 ; }
@@ -73,10 +81,10 @@ src_compile() {
 	emake \
 		$(use amd64 && echo ARCH=x86_64) \
 		BUILD_CLIENT=${client} \
-		BUILD_CLIENT_SMP=${client} \
+		BUILD_RENDERER_OPENGL2=$(buildit opengl2) \
 		BUILD_SERVER=$(buildit dedicated) \
 		BUILD_GAME_SO=0 \
-		BUILD_GAME_QVM=${qvm} \
+		BUILD_GAME_QVM=$(buildit qvm) \
 		CC="$(tc-getCC)" \
 		DEFAULT_BASEDIR="${GAMES_DATADIR}/tremulous" \
 		USE_CODEC_VORBIS=$(buildit vorbis) \
@@ -87,21 +95,20 @@ src_compile() {
 }
 
 src_install() {
-
+	insinto "${GAMES_DATADIR}"/tremulous
 	if use qvm; then
-		insinto "${GAMES_DATADIR}"/tremulous
 		rm	-f ../gpp/vms-gpp1.pk3 || die "rm old vms"
 		einfo "Zipping VMS pack"
-		cd	build/release-linux-*/base/
+		cd	build/release-linux-*/gpp/
 		zip -r ../../../../gpp/vms-gpp1.pk3 vm/ || die "vmsX.pk3"
+		cd ${S}
 	fi
-	
-	cd ${S}
+
 	doins -r ../gpp || die "doins -r failed"
 	dodoc ChangeLog
-	if use opengl || ! use dedicated ; then
-		newgamesbin build/release-linux-*/tremulous-smp.* ${PN} \
-			|| die "newgamesbin ${PN}"
+	if use opengl || use opengl2 || ! use dedicated ; then
+		newgamesbin build/release-linux-*/tremulous.* ${PN} || die "newgamsbin ${PN}"
+		doins       build/release-linux-*/renderer_*        || die "doins renderers"
 		newicon "${S}"/misc/tremulous.xpm ${PN}.xpm
 		make_desktop_entry ${PN} Tremulous-GPP
 	fi

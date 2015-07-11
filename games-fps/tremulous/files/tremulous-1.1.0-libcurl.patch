@@ -1,0 +1,12 @@
+diff -uNr src.p/client/cl_curl.h src/client/cl_curl.h
+--- src.p/client/cl_curl.h	2015-07-14 03:35:59.000000000 +0200
++++ src/client/cl_curl.h	2015-07-14 03:39:24.398469093 +0200
+@@ -34,7 +34,7 @@
+ #elif defined(MACOS_X)
+ #define DEFAULT_CURL_LIB "libcurl.dylib"
+ #else
+-#define DEFAULT_CURL_LIB "libcurl.so.3"
++#define DEFAULT_CURL_LIB "libcurl.so.4"
+ #endif
+ 
+ #if USE_LOCAL_HEADERS

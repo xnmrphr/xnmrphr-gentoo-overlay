@@ -2,11 +2,12 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-inherit git eutils
+inherit git-2 eutils
 
 DESCRIPTION="Google cloud print server"
 HOMEPAGE="https://github.com/armooo/cloudprint"
 EGIT_REPO_URI="git://github.com/armooo/cloudprint"
+EGIT_COMMIT="620e490"
 LICENSE="GPL-3"
 SLOT="0"
 KEYWORDS="~x86 ~amd64"
@@ -16,9 +17,9 @@ dev-python/pycups"
 S=${WORKDIR}/${P}
 
 src_unpack() {
-    git_src_unpack ${A}
+    git-2_src_unpack ${A}
     cd "${S}"
-    git checkout 620e490f1a1a82e42f5c3b603517e64ed2919654
+#    git checkout 620e490f1a1a82e42f5c3b603517e64ed2919654
     epatch "${FILESDIR}"/cloudprint-20110512.patch
 }
 

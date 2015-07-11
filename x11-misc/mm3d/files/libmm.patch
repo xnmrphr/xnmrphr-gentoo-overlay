@@ -1,0 +1,32 @@
+diff -uNr src.p/libmm3d/misc.cc src/libmm3d/misc.cc
+--- src.p/libmm3d/misc.cc	2009-03-04 23:48:55.000000000 +0100
++++ src/libmm3d/misc.cc	2015-08-17 01:19:56.622463144 +0200
+@@ -39,6 +39,7 @@
+ #include <sys/stat.h>
+ #include <ctype.h>
+ #include <errno.h>
++#include <unistd.h>
+ 
+ using std::string;
+ 
+diff -uNr src.p/libmm3d/sorted_list.h src/libmm3d/sorted_list.h
+--- src.p/libmm3d/sorted_list.h	2008-07-04 21:51:18.000000000 +0200
++++ src/libmm3d/sorted_list.h	2015-08-17 01:21:42.837458610 +0200
+@@ -55,7 +55,7 @@
+    unsigned len = this->size();
+    if ( len == 0 || (*this)[len-1] < val )
+    {
+-      push_back( val );
++      this->push_back( val );
+    }
+    else
+    {
+@@ -128,7 +128,7 @@
+    unsigned len = this->size();
+    if ( len == 0 || *((*this)[len-1]) < *val )
+    {
+-      push_back( val );
++      this->push_back( val );
+    }
+    else
+    {

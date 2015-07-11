@@ -1,0 +1,19 @@
+diff -uNr desktop.p/mm3d.desktop desktop/mm3d.desktop
+--- desktop.p/mm3d.desktop	2008-07-04 21:51:27.000000000 +0200
++++ desktop/mm3d.desktop	2015-08-17 02:06:29.782903040 +0200
+@@ -1,5 +1,4 @@
+ [Desktop Entry]
+-Encoding=UTF-8
+ Type=Application
+ Exec=mm3d %U
+ Icon=mm3d
+@@ -8,7 +7,7 @@
+ Comment=3D modeling program
+ Terminal=false
+ Name=mm3d
+-MimeType=application/x-mm3d
+-Categories=Qt;Application;Graphics;
++MimeType=application/x-mm3d;
++Categories=Qt;Graphics;
+ X-AppInstall-Package=mm3d
+ X-AppInstall-Section=universe

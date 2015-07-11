@@ -1,0 +1,20 @@
+diff -uNr src.p/renderer/tr_font.c src/renderer/tr_font.c
+--- src.p/renderer/tr_font.c	2008-12-14 09:07:38.000000000 +0100
++++ src/renderer/tr_font.c	2015-07-14 08:53:09.934811711 +0200
+@@ -77,11 +77,11 @@
+ #ifdef BUILD_FREETYPE
+ 
+ #include <ft2build.h>
+-#include <freetype/fterrors.h>
+-#include <freetype/ftsystem.h>
+-#include <freetype/ftimage.h>
+-#include <freetype/freetype.h>
+-#include <freetype/ftoutln.h>
++#include <freetype2/fterrors.h>
++#include <freetype2/ftsystem.h>
++#include <freetype2/ftimage.h>
++#include <freetype2/freetype.h>
++#include <freetype2/ftoutln.h>
+ 
+ #define _FLOOR(x)  ((x) & -64)
+ #define _CEIL(x)   (((x)+63) & -64)

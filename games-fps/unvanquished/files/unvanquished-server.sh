@@ -1,16 +1,15 @@
 #!/bin/sh
-cd "@GAMES_STATEDIR@/unvanquished-server"
+cd /var/lib/unvanquished-server
 
-[ -f @UNV_SERVER_DATA@/server.cfg ] \
-	|| ln -sf @GAMES_SYSCONFDIR@/unvanquished/server.cfg \
-	@UNV_SERVER_DATA@/server.cfg
-[ -f @UNV_SERVER_DATA@/maprotation.cfg ] \
-	|| ln -sf @GAMES_SYSCONFDIR@/unvanquished/maprotation.cfg \
-	@UNV_SERVER_DATA@/maprotation.cfg
+[ -f /var/lib/unvanquished-server/.Unvanquished/main/server.cfg ] \
+	|| ln -sf /etc/unvanquished/server.cfg \
+	/var/lib/unvanquished-server/.Unvanquished/main/server.cfg
+[ -f /var/lib/unvanquished-server/.Unvanquished/main/maprotation.cfg ] \
+	|| ln -sf /etc/unvanquished/maprotation.cfg \
+	/var/lib/unvanquished-server/.Unvanquished/main/maprotation.cfg
 
-exec "@GAMES_BINDIR@"/unvanquishedded \
-	+set fs_libpath "@GAMES_LIBDIR@/unvanquished" \
-	+set fs_basepath "@GAMES_DATADIR@/unvanquished" \
+exec /usr/bin/unvanquishedded \
 	+exec server.cfg \
+	+set fs_basepath "/usr/share/unvanquished" \
 	"$@"
 

@@ -1,0 +1,20 @@
+diff -uNr uair-0.1.3.p/uair.desktop uair-0.1.3/uair.desktop
+--- uair-0.1.3.p/uair.desktop	2015-08-18 03:33:07.000000000 +0200
++++ uair-0.1.3/uair.desktop	2015-08-18 03:45:57.387246848 +0200
+@@ -7,15 +7,13 @@
+ StartupNotify=true
+ MimeType=text/plain;
+ Icon=/opt/uair/static/launcher.png
+-Categories=Utilities
++Categories=Utility;
+ Actions=Window1;Window2;
+ 
+ [Desktop Action Window1]
+ Name=Start
+ Exec=/opt/uair/bin/uairlauncher start
+-OnlyShowIn=Unity;
+ 
+ [Desktop Action Window2]
+ Name=Stop
+ Exec=/opt/uair/bin/uairlauncher stop
+-OnlyShowIn=Unity;

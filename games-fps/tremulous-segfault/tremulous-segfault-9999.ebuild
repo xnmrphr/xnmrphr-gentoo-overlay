@@ -21,7 +21,7 @@ ESVN_PROJECT="segfault-read-only"
 LICENSE="GPL-2 CCPL-Attribution-ShareAlike-2.5"
 SLOT="0"
 KEYWORDS=""
-IUSE="dedicated openal +opengl +vorbis +qvm"
+IUSE="dedicated openal +opengl +vorbis -qvm"
 
 UIDEPEND="
 	virtual/jpeg
@@ -40,8 +40,20 @@ DEPEND="${RDEPEND}
 	app-arch/unzip
 	app-arch/zip"
 
-# there is a typo in dirname
 S=${WORKDIR}/tremulous/tremulous-ggp1-src
+
+pkg_setup() {
+    if use qvm; then
+	ewarn "======================================================"
+	ewarn "BIG FAT WARNING!!!"
+	ewarn " Try to do not use qvm flag"
+	ewarn "in most systems building deprecated QVMs may fail"
+	ewarn "======================================================"
+	sleep 2
+    fi
+}
+
+
 
 src_unpack() {
 	unpack ${A}

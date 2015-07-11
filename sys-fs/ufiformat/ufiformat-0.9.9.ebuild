@@ -2,6 +2,8 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
+EAPI=5
+
 DESCRIPTION="USB Floppy Disk formatting tool"
 HOMEPAGE="http://www.geocities.jp/tedi_world/format_usbfdd_e.html"
 SRC_URI="http://www.geocities.jp/tedi_world/${P}.tar.gz"
