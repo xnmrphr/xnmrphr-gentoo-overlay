@@ -3,10 +3,10 @@
 	<repo priority="50" quality="experimental" status="unofficial">
 		<name>xnmrphr</name>
 		<description>xnmrphr experimental overlay</description>
-		<homepage>https://code.google.com/p/xnmrphr-gentoo-overlay/</homepage>
+		<homepage>https://github.com/xnmrphr/xnmrphr-gentoo-overlay</homepage>
 		<owner>
 			<email>xnmrphr@gmail.com</email>
 		</owner>
-		<source type="git">https://code.google.com/p/xnmrphr-gentoo-overlay/</source>
+		<source type="git">https://code.google.com/p/xnmrphr-gentoo-overlay.git</source>
 	</repo>
 </repositories>
