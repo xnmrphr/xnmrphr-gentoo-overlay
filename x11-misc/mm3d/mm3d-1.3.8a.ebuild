@@ -58,8 +58,6 @@ src_install ()
 	mv ${D}/usr/share/doc/${PN} ${D}/usr/share/doc/${PF}
 
 	dodoc AUTHORS ChangeLog NEWS README TODO INSTALL || die "dodoc failed"
-
 	newicon src/pixmap/mm3dlogo-32x32.xpm ${PN}.xpm || die "doicon failed"
-
 	make_desktop_entry ${PN} "Misfit Model 3D" || die "make_desktop_entry failed"
 }
