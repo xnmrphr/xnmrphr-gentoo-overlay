@@ -1,0 +1,25 @@
+diff -uNr drivers.p/bluetooth/btbcm.c drivers/bluetooth/btbcm.c
+--- drivers.p/bluetooth/btbcm.c	2015-06-22 07:05:43.000000000 +0200
++++ drivers/bluetooth/btbcm.c	2015-07-18 10:36:20.743012918 +0200
+@@ -282,6 +282,8 @@
+ 	if (err)
+ 		return err;
+ 
++	msleep (300); //Wait after reset (added)
++
+ 	/* Read Local Version Info */
+ 	skb = btbcm_read_local_version(hdev);
+ 	if (IS_ERR(skb))
+diff -uNr drivers.p/bluetooth/btusb.c drivers/bluetooth/btusb.c
+--- drivers.p/bluetooth/btusb.c	2015-07-18 10:26:39.000000000 +0200
++++ drivers/bluetooth/btusb.c	2015-07-18 10:35:36.005011307 +0200
+@@ -117,6 +117,9 @@
+ 	/* Broadcom BCM20702A0 */
+ 	{ USB_DEVICE(0x413c, 0x8197) },
+ 
++	/* Broadcom BCM43142A0 (added) */
++	{ USB_DEVICE(0x105b, 0xe065), .driver_info = BTUSB_BCM_PATCHRAM },
++
+ 	/* Broadcom BCM20702B0 (Dynex/Insignia) */
+ 	{ USB_DEVICE(0x19ff, 0x0239), .driver_info = BTUSB_BCM_PATCHRAM },
+ 
