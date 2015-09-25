@@ -27,7 +27,7 @@ K_EXTRAEINFO="Gentoo sources with some additional patches."
 
 pkg_postinst() {
 	kernel-2_pkg_postinst
-	einfo "Pleas consider that kernel package as unsupported from mainline patched version of gentoo-sources"
+	einfo "Please consider that kernel package as unsupported from mainline patched version of gentoo-sources"
 	einfo "use it only at your risk and don't bother gentoo developers about any problems in future."
 	einfo "Package may contain some ugly patches and hardware related \"haxes\""
 	einfo "please consider that package as purely experimental and potentially unsafe."
