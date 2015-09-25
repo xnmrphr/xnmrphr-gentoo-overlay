@@ -19,6 +19,8 @@ IUSE="experimental"
 
 DESCRIPTION="Full sources including the Gentoo and uC-Art patchset for the ${KV_MAJOR}.${KV_MINOR} kernel tree"
 SRC_URI="${KERNEL_URI} ${GENPATCHES_URI} ${ARCH_URI}"
+KEYWORDS="~amd64 ~arm ~x86"
+
 #UNIPATCH_STRICTORDER=0
 UNIPATCH_LIST="${FILESDIR}/4.1.2-btbcm.patch"
 
