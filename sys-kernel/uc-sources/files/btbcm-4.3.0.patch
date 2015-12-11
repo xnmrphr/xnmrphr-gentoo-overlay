@@ -1,0 +1,52 @@
+diff --git a/drivers/bluetooth/btbcm.c b/drivers/bluetooth/btbcm.c
+index 02ed816..30a9c2b 100644
+--- a/drivers/bluetooth/btbcm.c
++++ b/drivers/bluetooth/btbcm.c
+@@ -266,6 +266,8 @@ int btbcm_initialize(struct hci_dev *hdev, char *fw_name, size_t len)
+ 	if (err)
+ 		return err;
+ 
++	msleep (300); //Wait after reset (added) - changed from 300 right now
++
+ 	/* Read Local Version Info */
+ 	skb = btbcm_read_local_version(hdev);
+ 	if (IS_ERR(skb))
+@@ -375,6 +377,11 @@ int btbcm_setup_patchram(struct hci_dev *hdev)
+ 	if (err)
+ 		return err;
+ 
++/*=========================*/
++// Lets add some time to settle
++	msleep (300);
++/*=========================*/
++
+ 	/* Read Local Version Info */
+ 	skb = btbcm_read_local_version(hdev);
+ 	if (IS_ERR(skb))
+diff --git a/drivers/bluetooth/btusb.c b/drivers/bluetooth/btusb.c
+index b6aceaf..5c1ad01 100644
+--- a/drivers/bluetooth/btusb.c
++++ b/drivers/bluetooth/btusb.c
+@@ -121,6 +121,9 @@ static const struct usb_device_id btusb_table[] = {
+ 	/* Broadcom BCM20702A0 */
+ 	{ USB_DEVICE(0x413c, 0x8197) },
+ 
++	/* Broadcom BCM43142A0 (added) */
++	{ USB_DEVICE(0x105b, 0xe065), .driver_info = BTUSB_BCM_PATCHRAM },
++
+ 	/* Broadcom BCM20702B0 (Dynex/Insignia) */
+ 	{ USB_DEVICE(0x19ff, 0x0239), .driver_info = BTUSB_BCM_PATCHRAM },
+ 
+diff --git a/include/net/bluetooth/hci.h b/include/net/bluetooth/hci.h
+index 7ca6690..2c80c87 100644
+--- a/include/net/bluetooth/hci.h
++++ b/include/net/bluetooth/hci.h
+@@ -248,7 +248,7 @@ enum {
+ #define HCI_DISCONN_TIMEOUT	msecs_to_jiffies(2000)	/* 2 seconds */
+ #define HCI_PAIRING_TIMEOUT	msecs_to_jiffies(60000)	/* 60 seconds */
+ #define HCI_INIT_TIMEOUT	msecs_to_jiffies(10000)	/* 10 seconds */
+-#define HCI_CMD_TIMEOUT		msecs_to_jiffies(2000)	/* 2 seconds */
++#define HCI_CMD_TIMEOUT		msecs_to_jiffies(5000)	/* changed from 2s to 5s*/
+ #define HCI_ACL_TX_TIMEOUT	msecs_to_jiffies(45000)	/* 45 seconds */
+ #define HCI_AUTO_OFF_TIMEOUT	msecs_to_jiffies(2000)	/* 2 seconds */
+ #define HCI_POWER_OFF_TIMEOUT	msecs_to_jiffies(5000)	/* 5 seconds */

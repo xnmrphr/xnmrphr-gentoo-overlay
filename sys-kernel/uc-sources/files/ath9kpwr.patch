@@ -1,0 +1,43 @@
+diff --git a/drivers/net/wireless/ath/ath9k/ar9003_eeprom.c b/drivers/net/wireless/ath/ath9k/ar9003_eeprom.c
+index 8b4561e..7b4de81 100644
+--- a/drivers/net/wireless/ath/ath9k/ar9003_eeprom.c
++++ b/drivers/net/wireless/ath/ath9k/ar9003_eeprom.c
+@@ -19,7 +19,7 @@
+ #include "ar9003_phy.h"
+ #include "ar9003_eeprom.h"
+ #include "ar9003_mci.h"
+-
++u8 mod_eeprompwr[ar9300RateSize];
+ #define COMP_HDR_LEN 4
+ #define COMP_CKSUM_LEN 2
+ 
+@@ -4674,6 +4674,7 @@ static void ar9003_hw_get_target_power_eeprom(struct ath_hw *ah,
+ 		ath_dbg(common, REGULATORY, "TPC[%02d] 0x%08x\n",
+ 			i, targetPowerValT2[i]);
+ 	}
++memcpy(mod_eeprompwr,targetPowerValT2,ar9300RateSize);
+ }
+ 
+ static int ar9003_hw_cal_pier_get(struct ath_hw *ah,
+@@ -5414,7 +5415,7 @@ static void ath9k_hw_ar9300_set_txpower(struct ath_hw *ah,
+ 
+ 	if (test)
+ 		return;
+-
++memcpy(targetPowerValT2,mod_eeprompwr,ar9300RateSize);
+ 	for (i = 0; i < ar9300RateSize; i++) {
+ 		ath_dbg(common, REGULATORY, "TPC[%02d] 0x%08x\n",
+ 			i, targetPowerValT2[i]);
+diff --git a/drivers/net/wireless/ath/ath9k/hw.c b/drivers/net/wireless/ath/ath9k/hw.c
+index 1dd0339..175c257 100644
+--- a/drivers/net/wireless/ath/ath9k/hw.c
++++ b/drivers/net/wireless/ath/ath9k/hw.c
+@@ -2396,7 +2396,7 @@ int ath9k_hw_fill_cap_info(struct ath_hw *ah)
+ 		ath_dbg(common, REGULATORY, "regdomain mapped to 0x%x\n",
+ 			regulatory->current_rd);
+ 	}
+-
++regulatory->current_rd=0x8044;
+ 	eeval = ah->eep_ops->get_eeprom(ah, EEP_OP_MODE);
+ 
+ 	if (eeval & AR5416_OPFLAGS_11A) {
