@@ -15,7 +15,7 @@ You can easly browse your files, upload new and listen to songs in MP3."
 HOMEPAGE="http://michal0468.github.io/u-air/"
 
 #SRC_URI=""
-EGIT_REPO_URI="https://github.com/michal0468/u-air" 
+EGIT_REPO_URI="https://github.com/michal0468/u-air"
 LICENSE=""
 SLOT="0"
 RESTRICT="mirror"
