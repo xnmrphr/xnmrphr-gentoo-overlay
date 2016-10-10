@@ -1,13 +1,11 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2016 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
 EAPI="5"
 ETYPE="sources"
 K_WANT_GENPATCHES="base extras experimental"
-K_GENPATCHES_VER="4"
-K_DEBLOB_AVAILABLE="0"
-K_KDBUS_AVAILABLE="0"
+K_GENPATCHES_VER="2"
 
 inherit kernel-2
 detect_version
@@ -36,10 +34,8 @@ src_unpack() {
 
 pkg_postinst() {
 	kernel-2_pkg_postinst
-	einfo "Please consider that kernel package as unsupported from mainline patched version of gentoo-sources"
-	einfo "use it only at your risk and don't bother gentoo developers about any problems in future."
-	einfo "Package may contain some ugly patches and hardware related \"haxes\""
-	einfo "please consider that package as purely experimental and potentially unsafe."
+	einfo "For more info on this patchset, and how to report problems, see:"
+	einfo "${HOMEPAGE}"
 }
 
 pkg_postrm() {

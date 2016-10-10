@@ -25,7 +25,6 @@ UNIPATCH_LIST="${FILESDIR}/btbcm-4.1.2.patch"
 
 K_EXTRAEINFO="Gentoo sources with some additional patches."
 
-
 pkg_postinst() {
 	kernel-2_pkg_postinst
 	einfo "Please consider that kernel package as unsupported from mainline patched version of gentoo-sources"

@@ -22,15 +22,17 @@ SRC_URI="${KERNEL_URI} ${GENPATCHES_URI} ${ARCH_URI}"
 
 #UNIPATCH_STRICTORDER=0
 
-if use btbcm; then
-	UNIPATCH_LIST+=" ${FILESDIR}/btbcm-4.3.0.patch"
-fi
-
-if use athpwr; then
-	UNIPATCH_LIST+=" ${FILESDIR}/ath9kpwr.patch"
-fi
-
 K_EXTRAEINFO="Gentoo sources with some additional patches."
+
+src_unpack() {
+	if use btbcm; then
+	    UNIPATCH_LIST+=" ${FILESDIR}/btbcm-4.3.0.patch"
+	fi
+	if use athpwr; then
+	    UNIPATCH_LIST+=" ${FILESDIR}/ath9kpwr.patch"
+	fi
+	kernel-2_src_unpack
+}
 
 pkg_postinst() {
 	kernel-2_pkg_postinst
