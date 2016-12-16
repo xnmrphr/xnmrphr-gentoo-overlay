@@ -1,0 +1,13 @@
+diff -uNr wpa_supplicant-2.6.p/wpa_supplicant/defconfig wpa_supplicant-2.6/wpa_supplicant/defconfig
+--- wpa_supplicant-2.6.p/wpa_supplicant/defconfig	2016-10-02 20:51:11.000000000 +0200
++++ wpa_supplicant-2.6/wpa_supplicant/defconfig	2016-12-16 13:11:02.148996725 +0100
+@@ -548,3 +548,9 @@
+ 
+ # Support Multi Band Operation
+ #CONFIG_MBO=y
++
++# Support Background Scan Operation
++#CONFIG_BGSCAN_SIMPLE=y
++
++# Support Background Scan With Learning
++#CONFIG_BGSCAN_LEARN=y
