@@ -1,0 +1,15 @@
+diff -uNr linssid-2.9.p/linssid-app/linssid-app.pro linssid-2.9/linssid-app/linssid-app.pro
+--- linssid-2.9.p/linssid-app/linssid-app.pro	2017-01-08 04:28:29.000000000 +0100
++++ linssid-2.9/linssid-app/linssid-app.pro	2017-01-08 04:31:04.140107383 +0100
+@@ -20,9 +20,9 @@
+ DEFINES += 
+ INCLUDEPATH += /usr/include/boost
+ INCLUDEPATH += /usr/include/qt5
+-INCLUDEPATH += /usr/include/qwt
++INCLUDEPATH += /usr/include/qwt6
+ LIBS += -lboost_regex
+-LIBS += /usr/lib/libqwt-qt5.so.6
++LIBS += /usr/lib/libqwt6-qt5.so.6
+ QMAKE_CXXFLAGS += -std=c++11
+ #
+ TARGET = linssid

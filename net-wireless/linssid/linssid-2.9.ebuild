@@ -31,9 +31,8 @@ RDEPEND="${DEPEND}
 
 src_prepare(){
 	#Some workarounds
-	sed -i -e 's/QT_STATIC_CONST/static const/g' qwt-lib/src/qwt_transform.h
-	sed -i -e 's/QT_STATIC_CONST_IMPL/const/g' qwt-lib/src/qwt_transform.cpp
 	sed -i -e 's/\:libboost\_regex\.a/boost_regex/g' ${PN}-app/${PN}-app.pro
+	epatch "${FILESDIR}/linssid-2.9-qwt6.patch"
 }
 
 src_configure(){
