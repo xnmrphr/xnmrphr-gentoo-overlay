@@ -1,0 +1,13 @@
+diff -uNr kirigami2-5.39.0.p/src/controls/Page.qml kirigami2-5.39.0/src/controls/Page.qml
+--- kirigami2-5.39.0.p/src/controls/Page.qml	2017-10-07 21:17:51.000000000 +0200
++++ kirigami2-5.39.0/src/controls/Page.qml	2017-10-24 16:01:42.264050274 +0200
+@@ -256,7 +256,8 @@
+             right: parent.right
+             bottom: parent.bottom
+         }
+-        property T2.Page page: root
++//	Temporary systemsettings5 crash fix
++//      property T2.Page page: root
+         height: item ? item.height : 0
+         source: (applicationWindow().header && applicationWindow().header.toString().indexOf("ToolBarApplicationHeader") === 0) ||
+                 (applicationWindow().footer && applicationWindow().footer.visible && applicationWindow().footer.toString().indexOf("ToolBarApplicationHeader") === 0)
