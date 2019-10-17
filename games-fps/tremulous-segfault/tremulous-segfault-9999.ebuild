@@ -6,7 +6,7 @@ EAPI=4
 
 MY_P=$"tremulous-gpp1"
 
-inherit eutils toolchain-funcs games subversion 
+inherit eutils toolchain-funcs games subversion git-r3
 
 DESCRIPTION="Team-based aliens vs humans FPS with buildable structures"
 HOMEPAGE="http://tremulous.net/"
@@ -15,8 +15,11 @@ HOMEPAGE="http://tremulous.net/"
 RESTRICT="mirror" #Mirror restriction, because we won't try to download that release from official mirrors - @rocket
 SRC_URI="mirror://sourceforge/tremulous/${MY_P}.zip"
 
-ESVN_REPO_URI="http://segfault.googlecode.com/svn/trunk/"
-ESVN_PROJECT="segfault-read-only"
+#ESVN_REPO_URI="http://segfault.googlecode.com/svn/trunk/"
+#ESVN_PROJECT="segfault-read-only"
+
+EGIT_REPO_URI="https://zittrig.eu/git/Tremulous-Archive/segfault.git"
+#EGIT_BRANCH="master"
 
 LICENSE="GPL-2 CCPL-Attribution-ShareAlike-2.5"
 SLOT="0"
@@ -41,6 +44,7 @@ DEPEND="${RDEPEND}
 	app-arch/zip"
 
 S=${WORKDIR}/tremulous/tremulous-ggp1-src
+EGIT_CHECKOUT_DIR=${S}
 
 pkg_setup() {
     if use qvm; then
@@ -59,7 +63,8 @@ src_unpack() {
 	unpack ${A}
 #	cd tremulous
 #	unpack ./${MY_P}-src.tar.gz
-	subversion_src_unpack
+	#subversion_src_unpack
+	git-r3_src_unpack
 	einfo CURRENT DIR: $( pwd )
 	epatch ${FILESDIR}/pplanes.patch
 	epatch ${FILESDIR}/zonemegs.patch

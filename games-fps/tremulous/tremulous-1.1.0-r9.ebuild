@@ -2,7 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: /var/cvsroot/gentoo-x86/games-fps/tremulous/tremulous-1.1.0-r4.ebuild,v 1.5 2010/10/15 12:30:03 ranger Exp $
 
-EAPI=2
+EAPI=4
 
 inherit eutils toolchain-funcs games
 
